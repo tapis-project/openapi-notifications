@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Tapis Notifications API
-  description: The Tapis Notifications API provides for management of event publication and subscription
+  description: The Tapis Notifications API provides for management of subscriptions and event publication
   version: '0.0.1'
   termsOfService: "https://tapis-project.org"
   contact:
@@ -24,8 +24,14 @@ servers:
 security:
   - TapisJWT: []
 tags:
-  - name: Notifications
-    description: manage notification events
+  - name: General
+    description: General service health and readiness
+  - name: Subscriptions
+    description: Manage notification subscription resources. Create, retrieve, update, etc.
+  - name: Events
+    description: Support event publication
+  - name: Permissions
+    description: Manage Tapis permissions for resources. Grant, revoke and retrieve.
 
 # ------------------------------------------------------------------------------
 # --- Paths -------------------------------------------------------------------
@@ -63,6 +69,802 @@ paths:
                 $ref: '#/components/schemas/RespBasic'
         '503':
           description: Service unavailable.
+
+  # --- Paths for subscriptions ------------------------------------------------
+  '/v3/notifications/subscriptions':
+    get:
+      tags:
+        - Subscriptions
+      summary: Retrieve subscriptions
+      description: Retrieve list of subscriptions. Use search and select query parameters to limit results.
+      operationId: getSubscriptions
+      parameters:
+        - name: search
+          in: query
+          description: Search conditions as a single query paramter. For example search=(id.like.MySub*)~(enabled.eq.true)
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit number of items returned. For example limit=10. Use -1 for unlimited. Default is 100.
+          schema:
+            type: integer
+            default: 100
+        - name: orderBy
+          in: query
+          description: Attribute for sorting. Direction may be included. For example orderBy=id(desc). Default direction is (asc).
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: Number of items to skip. Use one of skip or startAfter. For example skip=10. Default is 0.
+          schema:
+            type: integer
+        - name: startAfter
+          in: query
+          description: Where to start when sorting. Use one of skip or startAfter. Must also specify orderBy. For example, limit=10&orderBy=id(asc)&startAfter=my.sub1
+          schema:
+            type: string
+        - name: computeTotal
+          in: query
+          description: Compute total number of results that would have been returned if unlimited. Default is false.
+          schema:
+            type: boolean
+            default: false
+        - name: select
+          in: query
+          description: List of attributes to be included as part of each result item. For example select=id,owner,topicFilter
+          schema:
+            type: string
+            default: 'summaryAttributes'
+        - name: showDeleted
+          in: query
+          description: Indicates if Subscriptions marked as deleted should be shown in the results. Default is false.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespSubscriptions'
+        '400':
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+    post:
+      tags:
+        - Subscriptions
+      summary: Create a subscription
+      description: |
+        Create a subscription using a request body. Subscription id must be unique within a tenant and can be composed
+        of alphanumeric characters and the following special characters [-._~].
+        Description is optional with a maximum length of 2048 characters.
+
+        Note that certain attributes (such as tenant) are allowed but ignored so that the JSON result returned by a GET
+        may be modified and used when making a POST request to create a subscription.
+        The attributes that are allowed but ignored are
+
+          - tenant
+          - id
+          - uuid
+          - deleted
+          - created
+          - updated
+      operationId: createSubscription
+      parameters:
+        - name: skipCredentialCheck
+          in: query
+          description: Bypass initial check for valid credentials. Default is false.
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        description: A JSON object specifying information for the subscription to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqCreateSubscription'
+      responses:
+        '201':
+          description: Subscription created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespResourceUrl'
+        '400':
+          description: Input error. Invalid JSON.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '409':
+          description: Subscription already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespResourceUrl'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/search':
+    get:
+      tags:
+        - Subscriptions
+      summary: Retrieve list of subscriptions matching search conditions specified as query parameters
+      description: Retrieve details for subscriptions. Use query parameters to specify search conditions. For example owner.eq=jdoe&port.gt=1024
+      operationId: searchSubscriptionsQueryParameters
+      parameters:
+        - name: freeFormParameterName
+          in: query
+          description: Free form query parameters.
+          explode: true
+          allowEmptyValue: true
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          style: form
+        - name: limit
+          in: query
+          description: Limit number of items returned. For example limit=10. Use -1 for unlimited. Default is 100.
+          schema:
+            type: integer
+            default: 100
+        - name: orderBy
+          in: query
+          description: Attribute for sorting. Direction may be included. For example orderBy=id(desc). Default direction is (asc).
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: Number of items to skip. Use one of skip or startAfter. For example skip=10. Default is 0.
+          schema:
+            type: integer
+        - name: startAfter
+          in: query
+          description: Where to start when sorting. Use one of skip or startAfter. Must also specify orderBy. For example, limit=10&orderBy=id(asc)&startAfter=my.sub2
+          schema:
+            type: string
+        - name: computeTotal
+          in: query
+          description: Compute total number of results that would have been returned if unlimited. Default is false.
+          schema:
+            type: boolean
+            default: false
+        - name: select
+          in: query
+          description: List of attributes to be included as part of each result item. For example select=id,owner,topicFilter
+          schema:
+            type: string
+            default: 'summaryAttributes'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespSubscriptions'
+        '400':
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+    post:
+      tags:
+        - Subscriptions
+      summary: Retrieve list of subscriptions matching search conditions
+      description: |
+        Retrieve details for subscriptions. Use request body to specify SQL-like search conditions.
+      operationId: searchSubscriptionsRequestBody
+      parameters:
+        - name: limit
+          in: query
+          description: Limit number of items returned. For example limit=10. Use -1 for unlimited. Default is 100.
+          schema:
+            type: integer
+            default: 100
+        - name: orderBy
+          in: query
+          description: Attribute for sorting. Direction may be included. For example orderBy=id(desc). Default direction is (asc).
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: Number of items to skip. Use one of skip or startAfter. For example skip=10. Default is 0.
+          schema:
+            type: integer
+        - name: startAfter
+          in: query
+          description: Where to start when sorting. Use one of skip or startAfter. Must also specify orderBy. For example, limit=10&orderBy=id(asc)&startAfter=my.sub1
+          schema:
+            type: string
+        - name: computeTotal
+          in: query
+          description: Compute total number of results that would have been returned if unlimited. Default is false.
+          schema:
+            type: boolean
+            default: false
+        - name: select
+          in: query
+          description: List of attributes to be included as part of each result item. For example select=id,owner,topicFilter
+          schema:
+            type: string
+            default: 'summaryAttributes'
+      requestBody:
+        required: true
+        description: A JSON object specifying SQL-like search conditions as an array of strings. Strings are concatenated to form full search query.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqSearchSubscriptions'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespSubscriptions'
+        '400':
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/match/constraints':
+    post:
+      tags:
+        - Subscriptions
+      summary: Retrieve subscriptions satisfying specified constraint conditions (WARNING - not yet supported)
+      description: |
+        *WARNING Capability constraint matching is not yet supported.*
+        Retrieve details for subscriptions. Use request body to specify constraint conditions as an SQL-like WHERE clause.
+      operationId: matchConstraints
+      requestBody:
+        required: true
+        description: A JSON object specifying SQL-like constraint conditions as an array of strings. Strings are concatenated to form full query.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqMatchConstraints'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespSubscriptions'
+        '400':
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}':
+    get:
+      tags:
+        - Subscriptions
+      summary: Retrieve subscription details
+      description: |
+        Retrieve information for a subscription given the subscription name. Use query parameter returnCredentials=true to have
+        effectiveUserId credentials included in the response. Use query parameter authnMethod=<method> to override
+        default authn method.
+      operationId: getSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+        - name: returnCredentials
+          in: query
+          description: Highly restricted. Only certain Tapis services are authorized to get credentials.
+          schema:
+            type: boolean
+            default: false
+        - name: authnMethod
+          in: query
+          description: Desired authentication method to use when fetching credentials, default method used if this is null.
+          schema:
+            type: string
+            default: ''
+        - name: requireExecPerm
+          in: query
+          description: check for EXECUTE permission as well as READ permission.
+          schema:
+            type: boolean
+            default: false
+        - name: select
+          in: query
+          description: List of attributes to be included as part of the result item. For example select=id,owner,topicFilter
+          schema:
+            type: string
+            default: 'allAttributes'
+      responses:
+        '200':
+          description: Subscription found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespSubscription'
+        '400':
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+    patch:
+      tags:
+        - Subscriptions
+      summary: Update selected attributes of a subscription
+      description: |
+        Update selected attributes of a subscription. Request body may only contain updatable attributes. Subscription must exist.
+
+        Attributes that may not be updated via PATCH are
+
+          - id
+          - subscriptionType
+          - owner
+          - enabled
+          - bucketName
+          - rootDir
+          - isDtn
+          - canExec
+
+        Note that the attributes owner and enabled may be modified using other endpoints.
+      operationId: patchSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      requestBody:
+        required: true
+        description: A JSON object specifying changes to be applied.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqPatchSubscription'
+      responses:
+        '200':
+          description: Subscription updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespResourceUrl'
+        '400':
+          description: Input error. Invalid JSON.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+    put:
+      tags:
+        - Subscriptions
+      summary: Update all updatable attributes of a subscription
+      description: |
+        Update all updatable attributes of a subscription using a request body identical to POST. Subscription must exist.
+
+        By default any credentials provided for LINUX type subscriptions are verified. Use query parameter
+        skipCredentialCheck=true to bypass initial verification of credentials.
+
+        Note that certain attributes (such as tenant) are allowed but ignored so that the JSON result returned by a GET
+        may be modified and used when making a PUT request to update a subscription.
+
+        The attributes that are allowed but ignored for both PUT and POST are
+
+          - tenant
+          - uuid
+          - deleted
+          - created
+          - updated
+
+        In addition for a PUT operation the following non-updatable attributes are allowed but ignored
+
+          - id
+          - subscriptionType
+          - owner
+          - enabled
+          - bucketName
+          - rootDir
+          - isDtn
+          - canExec
+
+        Note that the attributes owner and enabled may be modified using other endpoints.
+      operationId: putSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+        - name: skipCredentialCheck
+          in: query
+          description: Bypass initial check for valid credentials. Default is false.
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        description: A JSON object specifying changes to be applied.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqPutSubscription'
+      responses:
+        '200':
+          description: Subscription updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespResourceUrl'
+        '400':
+          description: Input error. Invalid JSON.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '409':
+          description: Subscription already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespResourceUrl'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}/isEnabled':
+    get:
+      tags:
+        - Subscriptions
+      summary: Check if subscription is currently enabled
+      description: |
+        Check if a subscription is currently enabled, i.e. available for use.
+      operationId: isEnabled
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Check successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBoolean'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}/enable':
+    post:
+      tags:
+        - Subscriptions
+      summary: Mark a subscription availabe for use
+      description: |
+        Mark a subscription available for use.
+      operationId: enableSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Subscription enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}/disable':
+    post:
+      tags:
+        - Subscriptions
+      summary: Mark a subscription unavailabe for use
+      description: |
+        Mark a subscription unavailable for use.
+      operationId: disableSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Subscription disabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}/delete':
+    post:
+      tags:
+        - Subscriptions
+      summary: Mark a subscription as deleted
+      description: |
+        Mark a subscription as deleted. Subscription will not appear in queries unless explicitly requested.
+      operationId: deleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Subscription deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}/undelete':
+    post:
+      tags:
+        - Subscriptions
+      summary: Mark a subscription as not deleted
+      description: |
+        Mark a subscription as not deleted. Subscription will appear in queries.
+      operationId: undeleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Subscription undeleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}/changeOwner/{userName}':
+    post:
+      tags:
+        - Subscriptions
+      summary: Change subscription owner
+      description: |
+        Change owner of a subscription.
+      operationId: changeSubscriptionOwner
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+        - name: userName
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserNameString'
+      responses:
+        '200':
+          description: Subscription owner updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+
+  # --- Paths for /credentials ------------------------------------------------
+
+
 
 #  '/v3/notifications':
 #    get:
@@ -1039,228 +1841,47 @@ components:
     # ------------------------------------------------------------------------------
     # --- Model objects ------------------------------------------------------------
     # ------------------------------------------------------------------------------
-    # --- TapisApp ------------------------------------------------------------------
-    TapisApp:
+    # --- TapisSubscription --------------------------------------------------------
+    TapisSubscription:
       type: object
       properties:
         tenant:
           type: string
         id:
           $ref: '#/components/schemas/IdString'
-        version:
-          $ref: '#/components/schemas/AppVersionString'
         description:
           $ref: '#/components/schemas/DescriptionString'
-        appType:
-          $ref: '#/components/schemas/AppTypeEnum'
         owner:
           $ref: '#/components/schemas/UserNameApiDefaultString'
         enabled:
           type: boolean
           default: true
-        runtime:
-          $ref: '#/components/schemas/RuntimeEnum'
-        runtimeVersion:
-          type: string
-        runtimeOptions:
-          $ref: '#/components/schemas/RuntimeOptions'
-        containerImage:
-          type: string
-        maxJobs:
-          type: integer
-          default: -1
-        maxJobsPerUser:
-          type: integer
-          default: -1
-        strictFileInputs:
-          type: boolean
-          default: false
-        jobAttributes:
-          $ref: '#/components/schemas/JobAttributes'
-        tags:
-          type: array
-          items:
-            type: string
-        notes:
-          type: object
+        topicFilter:
+          $ref: '#/components/schemas/TopicFilter'
+        subjectFilter:
+          $ref: '#/components/schemas/SubjectFilter'
+        deliveryMethods:
+          $ref: '#/components/schemas/DeliveryMethods'
         deleted:
           type: boolean
         created:
           type: string
         updated:
           type: string
-    # --- RuntimeOptions --------------------------------------------------------
-    RuntimeOptions:
+   # --- DeliveryMethods --------------------------------------------------------
+    DeliveryMethods:
       type: array
       items:
-        $ref: '#/components/schemas/RuntimeOptionEnum'
-    # --- JobAttributes --------------------------------------------------------
-    JobAttributes:
-      type: object
-      properties:
-        description:
-          $ref: '#/components/schemas/DescriptionString'
-        dynamicExecSystem:
-          type: boolean
-          default: false
-        execSystemConstraints:
-          type: array
-          minItems: 1
-          items:
-            type: string
-            minLength: 3
-        execSystemId:
-          $ref: '#/components/schemas/IdString'
-        execSystemExecDir:
-          $ref: '#/components/schemas/DirString'
-        execSystemInputDir:
-          $ref: '#/components/schemas/DirString'
-        execSystemOutputDir:
-          $ref: '#/components/schemas/DirString'
-        execSystemLogicalQueue:
-          $ref: '#/components/schemas/QueueNameString'
-        archiveSystemId:
-          $ref: '#/components/schemas/IdString'
-        archiveSystemDir:
-          $ref: '#/components/schemas/DirString'
-        archiveOnAppError:
-          type: boolean
-          default: true
-        parameterSet:
-          $ref: '#/components/schemas/ParameterSet'
-        fileInputs:
-          type: array
-          items:
-            $ref: '#/components/schemas/FileInput'
-        nodeCount:
-          type: integer
-        coresPerNode:
-          type: integer
-        memoryMB:
-          type: integer
-        maxMinutes:
-          type: integer
-        subscriptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/NotificationSubscription'
-        tags:
-          type: array
-          items:
-            $ref: '#/components/schemas/TagString'
-    # --- ParameterSet --------------------------------------------------------
-    ParameterSet:
-      type: object
-      properties:
-        appArgs:
-          type: array
-          items:
-            $ref: '#/components/schemas/ArgSpec'
-        containerArgs:
-          type: array
-          items:
-            $ref: '#/components/schemas/ArgSpec'
-        schedulerOptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/ArgSpec'
-        envVariables:
-          type: array
-          items:
-            $ref: '#/components/schemas/KeyValuePair'
-        archiveFilter:
-          type: object
-          properties:
-            includes:
-              type: array
-              items:
-                type: string
-                minLength: 1
-            excludes:
-              type: array
-              items:
-                type: string
-                minLength: 1
-            includeLaunchFiles:
-                type: boolean
-                default: true
-    # --- FileInput --------------------------------------------------------
-    FileInput:
+        $ref: '#/components/schemas/DeliveryMethod'
+    # --- DeliveryMethod ------------------------------------------------------------
+    DeliveryMethod:
       type: object
       required:
-        - meta
+        - deliveryType
       properties:
-        sourceUrl:
-          type: string
-        targetPath:
-          type: string
-        inPlace:
-          type: boolean
-          default: false
-        meta:
-          $ref: '#/components/schemas/ArgMetaSpec'
-    # --- ArgSpec --------------------------------------------------------------
-    ArgSpec:
-      type: object
-      required:
-        - arg
-      properties:
-        arg:
-          type: string
-        meta:
-          $ref: '#/components/schemas/ArgMetaSpec'
-    # --- ArgMetaSpec ----------------------------------------------------------
-    ArgMetaSpec:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-          minLength: 1
-        description:
-          type: string
-        required:
-          type: boolean
-          default: false
-        keyValuePairs:
-          type: array
-          items:
-            $ref: '#/components/schemas/KeyValuePair'
-    # --- KeyValuePair -------------------------------------------------------
-    KeyValuePair:
-      type: object
-      required:
-        - key
-      properties:
-        key:
-          type: string
-          minLength: 1
-        value:
-          type: string
-    # --- NotificationSubscription -------------------------------------------
-    NotificationSubscription:
-      type: object
-      required:
-        - notificationMechanisms
-      properties:
-        filter:
-          type: string
-          minLength: 1
-        notificationMechanisms:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/NotificationMechanism'
-    # --- NotificationMechanism -------------------------------------------
-    NotificationMechanism:
-      type: object
-      required:
-        - mechanism
-      properties:
-        mechanism:
-          $ref: '#/components/schemas/NotificationMechanismEnum'
-        webhookURL:
+        deliveryType:
+          $ref: '#/components/schemas/DeliveryTypeEnum'
+        webhookUrl:
           type: string
         emailAddress:
           type: string
@@ -1269,10 +1890,6 @@ components:
       type: string
       minLength: 1
       maxLength: 80
-    AppVersionString:
-      type: string
-      minLength: 1
-      maxLength: 64
     DescriptionString:
       type: string
       maxLength: 2048
@@ -1285,147 +1902,66 @@ components:
       minLength: 1
       maxLength: 60
       default: "${apiUserId}"
-    DirString:
-      type: string
-      minLength: 1
-      maxLength: 4096
-    TagString:
-      type: string
-      minLength: 1
-      maxLength: 128
-    QueueNameString:
-      type: string
-      minLength: 1
-      maxLength: 128
     # -------------------------------------------------------------------------
     # --- Request objects -----------------------------------------------------
     # -------------------------------------------------------------------------
-#    ReqCreateApp:
-#      type: object
-#      required:
-#        - id
-#        - version
-#        - appType
-#        - jobAttributes
-#      properties:
-#        id:
-#          $ref: '#/components/schemas/IdString'
-#        version:
-#          $ref: '#/components/schemas/AppVersionString'
-#        description:
-#          $ref: '#/components/schemas/DescriptionString'
-#        appType:
-#          $ref: '#/components/schemas/AppTypeEnum'
-#        owner:
-#          $ref: '#/components/schemas/UserNameApiDefaultString'
-#        enabled:
-#          type: boolean
-#          default: true
-#        runtime:
-#          $ref: '#/components/schemas/RuntimeEnum'
-#        runtimeVersion:
-#          type: string
-#        runtimeOptions:
-#          $ref: '#/components/schemas/RuntimeOptions'
-#        containerImage:
-#          type: string
-#        maxJobs:
-#          type: integer
-#          default: -1
-#        maxJobsPerUser:
-#          type: integer
-#          default: -1
-#        strictFileInputs:
-#          type: boolean
-#          default: false
-#        jobAttributes:
-#          $ref: '#/components/schemas/JobAttributes'
-#        tags:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/TagString'
-#        notes:
-#          type: object
-#    ReqPatchApp:
-#      type: object
-#      properties:
-#        description:
-#          $ref: '#/components/schemas/DescriptionString'
-#        runtime:
-#          $ref: '#/components/schemas/RuntimeEnum'
-#        runtimeVersion:
-#          type: string
-#        runtimeOptions:
-#          $ref: '#/components/schemas/RuntimeOptions'
-#        containerImage:
-#          type: string
-#        maxJobs:
-#          type: integer
-#          default: -1
-#        maxJobsPerUser:
-#          type: integer
-#          default: -1
-#        strictFileInputs:
-#          type: boolean
-#          default: false
-#        jobAttributes:
-#          $ref: '#/components/schemas/JobAttributes'
-#        tags:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/TagString'
-#        notes:
-#          type: object
-#    ReqPutApp:
-#      type: object
-#      properties:
-#        description:
-#          $ref: '#/components/schemas/DescriptionString'
-#        runtime:
-#          $ref: '#/components/schemas/RuntimeEnum'
-#        runtimeVersion:
-#          type: string
-#        runtimeOptions:
-#          $ref: '#/components/schemas/RuntimeOptions'
-#        containerImage:
-#          type: string
-#        maxJobs:
-#          type: integer
-#          default: -1
-#        maxJobsPerUser:
-#          type: integer
-#          default: -1
-#        strictFileInputs:
-#          type: boolean
-#          default: false
-#        jobAttributes:
-#          $ref: '#/components/schemas/JobAttributes'
-#        tags:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/TagString'
-#        notes:
-#          type: object
-#    ReqPerms:
-#      type: object
-#      required:
-#        - permissions
-#      properties:
-#        permissions:
-#          type: array
-#          minItems: 1
-#          items:
-#            type: string
-#    ReqSearchApps:
-#      type: object
-#      required:
-#        - search
-#      properties:
-#        search:
-#          type: array
-#          minItems: 1
-#          items:
-#            type: string
+    ReqCreateSubscription:
+      type: object
+      required:
+        - topicFilter
+        - deliveryMethods
+      properties:
+        id:
+          $ref: '#/components/schemas/IdString'
+        description:
+          $ref: '#/components/schemas/DescriptionString'
+        owner:
+          $ref: '#/components/schemas/UserNameApiDefaultString'
+        enabled:
+          type: boolean
+          default: true
+        topicFilter:
+          $ref: '#/components/schemas/TopicFilterString'
+        subjectFilter:
+          $ref: '#/components/schemas/SubjectFilterString'
+    ReqPatchSubscription:
+      type: object
+      properties:
+        description:
+          $ref: '#/components/schemas/DescriptionString'
+        topicFilter:
+          $ref: '#/components/schemas/TopicFilterString'
+        subjectFilter:
+          $ref: '#/components/schemas/SubjectFilterString'
+    ReqPutSubscription:
+      type: object
+      properties:
+        description:
+          $ref: '#/components/schemas/DescriptionString'
+        topicFilter:
+          $ref: '#/components/schemas/TopicFilterString'
+        subjectFilter:
+          $ref: '#/components/schemas/SubjectFilterString'
+    ReqPerms:
+      type: object
+      required:
+        - permissions
+      properties:
+        permissions:
+          type: array
+          minItems: 1
+          items:
+            type: string
+    ReqSearchSubscriptions:
+      type: object
+      required:
+        - search
+      properties:
+        search:
+          type: array
+          minItems: 1
+          items:
+            type: string
     # -------------------------------------------------------------------------
     # --- Response objects ----------------------------------------------------
     # -------------------------------------------------------------------------
@@ -1517,72 +2053,54 @@ components:
       properties:
         url:
           type: string
-#    RespApp:
-#      type: object
-#      properties:
-#        status:
-#          type: string
-#        message:
-#          type: string
-#        version:
-#          type: string
-#        result:
-#          $ref: '#/components/schemas/TapisApp'
-#        metadata:
-#          type: object
-#    RespApps:
-#      type: object
-#      properties:
-#        status:
-#          type: string
-#        message:
-#          type: string
-#        version:
-#          type: string
-#        result:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/TapisApp'
-#        metadata:
-#          type: object
-#          properties:
-#            recordCount:
-#              type: integer
-#            recordLimit:
-#              type: integer
-#            recordsSkipped:
-#              type: integer
-#            orderBy:
-#              type: string
-#            startAfter:
-#              type: string
-#            totalCount:
-#              type: integer
+    RespSubscription:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        version:
+          type: string
+        result:
+          $ref: '#/components/schemas/TapisSubscription'
+        metadata:
+          type: object
+    RespSubscriptions:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        version:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/TapisSubscription'
+        metadata:
+          type: object
+          properties:
+            recordCount:
+              type: integer
+            recordLimit:
+              type: integer
+            recordsSkipped:
+              type: integer
+            orderBy:
+              type: string
+            startAfter:
+              type: string
+            totalCount:
+              type: integer
     # -------------------------------------------------------------------------
     # --- Enums ---------------------------------------------------------------
     # -------------------------------------------------------------------------
-#    AppTypeEnum:
-#      type: string
-#      enum:
-#        - BATCH
-#        - FORK
-#    RuntimeEnum:
-#      type: string
-#      enum:
-#        - SINGULARITY
-#        - DOCKER
-#    # NOTE: RuntimeOption starts with NONE due to a bug in client code generation.
-#    #       Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
-#    RuntimeOptionEnum:
-#      type: string
-#      enum:
-#        - NONE
-#        - SINGULARITY_START
-#        - SINGULARITY_RUN
-#    NotificationMechanismEnum:
-#      type: string
-#      enum:
-#        - WEBHOOK
+    DeliveryTypeEnum:
+      type: string
+      enum:
+        - WEBHOOK
 #        - EMAIL
 #        - QUEUE
 #        - ACTOR
