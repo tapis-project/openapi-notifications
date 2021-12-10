@@ -161,14 +161,14 @@ paths:
           - uuid
           - created
           - updated
-      operationId: createSubscription
+      operationId: postSubscription
       requestBody:
         required: true
         description: A JSON object specifying information for the subscription to be created.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReqCreateSubscription'
+              $ref: '#/components/schemas/ReqPostSubscription'
       responses:
         '201':
           description: Subscription created.
@@ -734,7 +734,7 @@ paths:
   '/v3/notifications/events':
     post:
       tags:
-        - Subscriptions
+        - Events
       summary: Publish an event
       description: |
         Publish an event to be distributed to all subscriberstion. Event details are in the request body.
@@ -745,7 +745,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReqPublishEvent'
+              $ref: '#/components/schemas/ReqPostEvent'
       responses:
         '201':
           description: Event published.
@@ -809,6 +809,8 @@ components:
           type: string
         deliveryMethods:
           $ref: '#/components/schemas/DeliveryMethods'
+        notes:
+          type: object
         created:
           type: string
         updated:
@@ -850,7 +852,7 @@ components:
     # -------------------------------------------------------------------------
     # --- Request objects -----------------------------------------------------
     # -------------------------------------------------------------------------
-    ReqCreateSubscription:
+    ReqPostSubscription:
       type: object
       required:
         - topicFilter
@@ -871,6 +873,8 @@ components:
           type: string
         deliveryMethods:
           $ref: '#/components/schemas/DeliveryMethods'
+        notes:
+          type: object
     ReqPatchSubscription:
       type: object
       properties:
@@ -880,6 +884,10 @@ components:
           type: string
         subjectFilter:
           type: string
+        deliveryMethods:
+          $ref: '#/components/schemas/DeliveryMethods'
+        notes:
+          type: object
     ReqPutSubscription:
       type: object
       properties:
@@ -889,7 +897,11 @@ components:
           type: string
         subjectFilter:
           type: string
-    ReqPublishEvent:
+        deliveryMethods:
+          $ref: '#/components/schemas/DeliveryMethods'
+        notes:
+          type: object
+    ReqPostEvent:
       type: object
       required:
         - source
