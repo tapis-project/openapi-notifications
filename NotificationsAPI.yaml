@@ -528,6 +528,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
+    delete:
+      tags:
+        - Subscriptions
+      summary: Remove a subscription
+      description: |
+        Remove a subscription. Events will stop being delivered.
+        Subscription must be re-created to resume event delivery.
+      operationId: deleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Subscription deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
   '/v3/notifications/subscriptions/{subscriptionId}/isEnabled':
     get:
       tags:
@@ -645,46 +684,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
-  '/v3/notifications/subscriptions/{subscriptionId}/delete':
-    post:
-      tags:
-        - Subscriptions
-      summary: Delete a subscription
-      description: |
-        Remove a subscription. Events will stop being delivered.
-        Subscription must be re-created to resume event delivery.
-      operationId: deleteSubscription
-      parameters:
-        - name: subscriptionId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/IdString'
-      responses:
-        '200':
-          description: Subscription deleted.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespChangeCount'
-        '401':
-          description: Not authorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
-        '404':
-          description: Subscription not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
-        '500':
-          description: Server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
   '/v3/notifications/subscriptions/{subscriptionId}/changeOwner/{userName}':
     post:
       tags:
@@ -737,7 +736,7 @@ paths:
         - Events
       summary: Publish an event
       description: |
-        Publish an event to be distributed to all subscriberstion. Event details are in the request body.
+        Publish an event to be distributed to all subscribers. Event details are in the request body.
       operationId: publishEvent
       requestBody:
         required: true
