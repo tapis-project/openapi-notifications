@@ -830,8 +830,8 @@ components:
           $ref: '#/components/schemas/DeliveryTypeEnum'
         webhookUrl:
           type: string
-#        emailAddress:
-#          type: string
+        emailAddress:
+          type: string
     # --- String types with constraints ------------------------------------
     IdString:
       type: string
