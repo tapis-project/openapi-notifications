@@ -30,8 +30,6 @@ tags:
     description: Manage notification subscription resources. Create, retrieve, update, etc.
   - name: Events
     description: Support event publication
-  - name: Permissions
-    description: Manage Tapis permissions for resources. Grant, revoke and retrieve.
 
 # ------------------------------------------------------------------------------
 # --- Paths -------------------------------------------------------------------
@@ -810,6 +808,9 @@ components:
           $ref: '#/components/schemas/DeliveryMethods'
         notes:
           type: object
+        uuid:
+          type: string
+          format: uuid
         created:
           type: string
         updated:
@@ -915,16 +916,6 @@ components:
           type: string
         time:
           type: string
-    ReqPerms:
-      type: object
-      required:
-        - permissions
-      properties:
-        permissions:
-          type: array
-          minItems: 1
-          items:
-            type: string
     ReqSearchSubscriptions:
       type: object
       required:
@@ -1074,6 +1065,4 @@ components:
       type: string
       enum:
         - WEBHOOK
-#        - EMAIL
-#        - QUEUE
-#        - ACTOR
+        - EMAIL
