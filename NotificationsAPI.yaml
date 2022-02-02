@@ -744,7 +744,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ReqPostEvent'
       responses:
-        '201':
+        '200':
           description: Event published.
           content:
             application/json:
@@ -916,6 +916,7 @@ components:
           type: string
         time:
           type: string
+          format: date-time
     ReqSearchSubscriptions:
       type: object
       required:
