@@ -27,7 +27,7 @@ tags:
   - name: General
     description: General service health and readiness
   - name: Subscriptions
-    description: Manage notification subscription resources. Create, retrieve, update, etc.
+    description: Manage notification subscriptions. Create, retrieve, update, etc.
   - name: Events
     description: Support event publication
 
@@ -157,6 +157,7 @@ paths:
 
           - tenant
           - uuid
+          - expiry
           - created
           - updated
       operationId: postSubscription
@@ -410,8 +411,9 @@ paths:
           - id
           - owner
           - enabled
+          - ttl
 
-        Note that the attributes owner and enabled may be modified using other endpoints.
+        Note that the attributes owner, enabled and ttl may be modified using other endpoints.
       operationId: patchSubscription
       parameters:
         - name: subscriptionId
@@ -471,6 +473,7 @@ paths:
 
           - tenant
           - uuid
+          - expiry
           - created
           - updated
 
@@ -479,8 +482,9 @@ paths:
           - id
           - owner
           - enabled
+          - ttl
 
-        Note that the attributes owner and enabled may be modified using other endpoints.
+        Note that the attributes owner, enabled and ttl may be modified using other endpoints.
       operationId: putSubscription
       parameters:
         - name: subscriptionId
@@ -726,6 +730,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/{subscriptionId}/updateTTL/{ttl}':
+    post:
+      tags:
+        - Subscriptions
+      summary: Update Time-To-Live for a subscription.
+      description: |
+        Update Time-To-Live (TTL) for a subscription.
+        TTL provided as number of minutes. Use 0 to indicate subscription should never expire.
+      operationId: updateTTL
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+        - name: ttl
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Subscription TTL updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
 
   # --- Paths for notifications/events ------------------------------------------------
   '/v3/notifications/events':
@@ -806,11 +855,15 @@ components:
           type: string
         deliveryMethods:
           $ref: '#/components/schemas/DeliveryMethods'
+        ttl:
+          type: integer
         notes:
           type: object
         uuid:
           type: string
           format: uuid
+        expiry:
+          type: string
         created:
           type: string
         updated:
