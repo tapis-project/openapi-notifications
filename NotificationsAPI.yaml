@@ -967,6 +967,8 @@ components:
           type: string
         subject:
           type: string
+        seriesId:
+          type: string
         time:
           type: string
           format: date-time
