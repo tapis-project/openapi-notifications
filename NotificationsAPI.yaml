@@ -878,6 +878,7 @@ components:
       type: object
       required:
         - deliveryType
+        - deliveryAddress
       properties:
         deliveryType:
           $ref: '#/components/schemas/DeliveryTypeEnum'
