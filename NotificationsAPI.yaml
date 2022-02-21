@@ -881,9 +881,7 @@ components:
       properties:
         deliveryType:
           $ref: '#/components/schemas/DeliveryTypeEnum'
-        webhookUrl:
-          type: string
-        emailAddress:
+        deliveryAddress:
           type: string
     # --- String types with constraints ------------------------------------
     IdString:
