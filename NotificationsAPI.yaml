@@ -29,7 +29,9 @@ tags:
   - name: Subscriptions
     description: Manage notification subscriptions. Create, retrieve, update, etc.
   - name: Events
-    description: Support event publication
+    description: Event publication
+  - name: Test
+    description: Support for managing a sequence of test notifications.
 
 # ------------------------------------------------------------------------------
 # --- Paths -------------------------------------------------------------------
@@ -821,18 +823,18 @@ paths:
   '/v3/notifications/test/begin':
     post:
       tags:
-        - Events
+        - Test
       summary: Start a test sequence by creating a subscription and publishing an event
       description: |
-        Start a test sequence by creating a subscription and publishing an event matching the subscription.
+        Start a test sequence by creating a subscription and publishing an initial event matching the subscription.
         The subscription will have the following properties:
-          - owner: <api_User>
-          - id: <Subscription_UUID>
+          - owner: <api_user>
+          - id: <subscription_uuid>
           - typeFilter: notifications.test.*
-          - subjectFilter: <Subscription_UUID>
+          - subjectFilter: <subscription_uuid>
           - deliveryMethod:
             - Type: WEBHOOK
-            - Address: <tenant_base_url>/v3/notifications/test/callback/<Subscription_UUID>
+            - Address: <tenant_base_url>/v3/notifications/test/callback/<subscription_uuid>
           - ttl: 60
 
         The default TTL of 1 hour may be overridden using the query parameter *subscriptionTTL*.
@@ -841,10 +843,12 @@ paths:
           - user: <api_User>
           - source: <tenant_base_url>/v3/notifications/test
           - type: notifications.test.begin
-          - subject: <Subscription_UUID>
+          - subject: <subscription_uuid>
 
         The initial event will be published to the main queue and the subscription will be returned to the caller.
-      operationId: beginTest
+        The sequence of test events may be continued by publishing events that match the test subscription. 
+        Results will be recorded when notifications associated with the test are received via the callback.
+      operationId: beginTestSequence
       parameters:
         - name: subscriptionTTL
           in: query
@@ -858,6 +862,52 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/RespSubscription'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/test/{subscriptionId}':
+    get:
+      tags:
+        - Test
+      summary: Retrieve status and history for a test sequence.
+      description: |
+        Retrieve status and result history for a test sequence created using the endpoint *test/begin*.
+      operationId: getTestResults
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Results found.
+          content:
+            application/json:
+              schema:
+# TODO
+                $ref: '#/components/schemas/RespTestResults?????????'
+        '400':
+          description: Subscription is not associated with a test sequence.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/RespBasic'
         '500':
           description: Server error.
@@ -865,7 +915,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
-
+    delete:
+      tags:
+        - Test
+      summary: Remove all test sequence artifacts.
+      description: |
+        Remove all test sequence artifacts including the subscription and results.
+      operationId: deleteTestSequence
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      responses:
+        '200':
+          description: Test sequence deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '400':
+          description: Subscription is not associated with a test sequence.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Test sequence not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/test/callback/{subscriptionId}':
+    post:
+      tags:
+        - Test
+      summary: Record a test sequence notification result.
+      description: |
+        Callback endpoint for receiving events associated with a test sequence.
+        Results will be recorded when notifications associated with the test are received via the callback.
+      operationId: recordTestResult
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/IdString'
+      requestBody:
+        required: true
+        description: A JSON object with event details.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReqPostEvent'
+      responses:
+        '200':
+          description: Test event received and recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '400':
+          description: Subscription is not associated with a test sequence.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Test sequence not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
 
 # ------------------------------------------------------------------------------
 # --- Components ---------------------------------------------------------------
@@ -932,6 +1072,31 @@ components:
           $ref: '#/components/schemas/DeliveryTypeEnum'
         deliveryAddress:
           type: string
+    # --- Event ------------------------------------------------------------
+# TODO/TBD: Currently this is same as ReqPostEvent, have just one? need to differ?
+    Event:
+      type: object
+      required:
+        - source
+        - type
+        - time
+      properties:
+        source:
+          type: string
+        type:
+          type: string
+        subject:
+          type: string
+        seriesId:
+          type: string
+        time:
+          type: string
+          format: date-time
+        uuid:
+          type: string
+          format: uuid
+        user:
+          type: string
     # --- String types with constraints ------------------------------------
     IdString:
       type: string
@@ -949,6 +1114,19 @@ components:
       minLength: 1
       maxLength: 60
       default: "${apiUserId}"
+    # --- TestResults --------------------------------------------------------
+    TestResults:
+      type: object
+      properties:
+        tenant:
+          type: string
+        subscription:
+          $ref: '#/components/schemas/TapisSubscription'
+        receivedEvents:
+          type: array
+          items:
+            # TODO create Event component
+            $ref: '#/components/schemas/Event'
     # -------------------------------------------------------------------------
     # --- Request objects -----------------------------------------------------
     # -------------------------------------------------------------------------
@@ -1019,6 +1197,11 @@ components:
         time:
           type: string
           format: date-time
+        uuid:
+          type: string
+          format: uuid
+        user:
+          type: string
     ReqSearchSubscriptions:
       type: object
       required:
@@ -1161,6 +1344,19 @@ components:
               type: string
             totalCount:
               type: integer
+    RespTestResults:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        version:
+          type: string
+        result:
+          $ref: '#/components/schemas/TestResults'
+        metadata:
+          type: object
     # -------------------------------------------------------------------------
     # --- Enums ---------------------------------------------------------------
     # -------------------------------------------------------------------------
