@@ -817,6 +817,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
+  # --- Paths for notifications/test ------------------------------------------------
+  '/v3/notifications/test/begin':
+    post:
+      tags:
+        - Events
+      summary: Start a test sequence by creating a subscription and publishing an event
+      description: |
+        Start a test sequence by creating a subscription and publishing an event matching the subscription.
+        The subscription will have the following properties:
+          - owner: <api_User>
+          - id: <Subscription_UUID>
+          - typeFilter: notifications.test.*
+          - subjectFilter: <Subscription_UUID>
+          - deliveryMethod:
+            - Type: WEBHOOK
+            - Address: <tenant_base_url>/v3/notifications/test/callback/<Subscription_UUID>
+          - ttl: 60
+
+        The default TTL of 1 hour may be overridden using the query parameter *subscriptionTTL*.
+
+        The initial event will have the following properties:
+          - user: <api_User>
+          - source: <tenant_base_url>/v3/notifications/test
+          - type: notifications.test.begin
+          - subject: <Subscription_UUID>
+
+        The initial event will be published to the main queue and the subscription will be returned to the caller.
+      operationId: beginTest
+      parameters:
+        - name: subscriptionTTL
+          in: query
+          description: Subscription TTL in minutes. Default is 60 minutes.
+          schema:
+            type: integer
+            default: 60
+      responses:
+        '200':
+          description: Test subscription created and test event published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
 
 
 # ------------------------------------------------------------------------------
