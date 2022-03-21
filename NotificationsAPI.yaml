@@ -793,7 +793,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReqPostEvent'
+              $ref: '#/components/schemas/Event'
       responses:
         '200':
           description: Event published.
@@ -876,7 +876,7 @@ paths:
       summary: Retrieve status and history for a test sequence.
       description: |
         Retrieve status and result history for a test sequence created using the endpoint *test/begin*.
-      operationId: getTestResults
+      operationId: getTestSequence
       parameters:
         - name: subscriptionId
           in: path
@@ -889,8 +889,7 @@ paths:
           content:
             application/json:
               schema:
-# TODO
-                $ref: '#/components/schemas/RespTestResults?????????'
+                $ref: '#/components/schemas/RespTestSequence'
         '400':
           description: Subscription is not associated with a test sequence.
           content:
@@ -967,7 +966,7 @@ paths:
       description: |
         Callback endpoint for receiving events associated with a test sequence.
         Results will be recorded when notifications associated with the test are received via the callback.
-      operationId: recordTestResult
+      operationId: recordTestEvent
       parameters:
         - name: subscriptionId
           in: path
@@ -980,7 +979,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReqPostEvent'
+              $ref: '#/components/schemas/Event'
       responses:
         '200':
           description: Test event received and recorded.
@@ -1073,7 +1072,6 @@ components:
         deliveryAddress:
           type: string
     # --- Event ------------------------------------------------------------
-# TODO/TBD: Currently this is same as ReqPostEvent, have just one? need to differ?
     Event:
       type: object
       required:
@@ -1114,8 +1112,8 @@ components:
       minLength: 1
       maxLength: 60
       default: "${apiUserId}"
-    # --- TestResults --------------------------------------------------------
-    TestResults:
+    # --- TestSequence --------------------------------------------------------
+    TestSequence:
       type: object
       properties:
         tenant:
@@ -1179,29 +1177,6 @@ components:
           $ref: '#/components/schemas/DeliveryMethods'
         notes:
           type: object
-    ReqPostEvent:
-      type: object
-      required:
-        - source
-        - type
-        - time
-      properties:
-        source:
-          type: string
-        type:
-          type: string
-        subject:
-          type: string
-        seriesId:
-          type: string
-        time:
-          type: string
-          format: date-time
-        uuid:
-          type: string
-          format: uuid
-        user:
-          type: string
     ReqSearchSubscriptions:
       type: object
       required:
@@ -1344,7 +1319,7 @@ components:
               type: string
             totalCount:
               type: integer
-    RespTestResults:
+    RespTestSequence:
       type: object
       properties:
         status:
@@ -1354,7 +1329,7 @@ components:
         version:
           type: string
         result:
-          $ref: '#/components/schemas/TestResults'
+          $ref: '#/components/schemas/TestSequence'
         metadata:
           type: object
     # -------------------------------------------------------------------------
