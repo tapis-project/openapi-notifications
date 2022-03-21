@@ -786,6 +786,15 @@ paths:
       summary: Publish an event
       description: |
         Publish an event to be distributed to all subscribers. Event details are in the request body.
+
+        Note that certain attributes of an event are assigned by the service when the event is published.
+        These attributes are allowed in the request body but ignored so that the JSON
+        received as part of a delivery may be modified and used when making a POST request to publish another event.
+        The attributes that are allowed but ignored are
+
+          - tenant
+          - user
+          - uuid
       operationId: postEvent
       requestBody:
         required: true
@@ -1093,6 +1102,8 @@ components:
         uuid:
           type: string
           format: uuid
+        tenant:
+          type: string
         user:
           type: string
     # --- String types with constraints ------------------------------------
