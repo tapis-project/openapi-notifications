@@ -795,6 +795,9 @@ paths:
           - tenant
           - user
           - uuid
+          - type1
+          - type2
+          - type3
       operationId: postEvent
       requestBody:
         required: true
@@ -1102,6 +1105,12 @@ components:
         uuid:
           type: string
           format: uuid
+        type1:
+          type: string
+        type2:
+          type: string
+        type3:
+          type: string
         tenant:
           type: string
         user:
