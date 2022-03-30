@@ -788,16 +788,13 @@ paths:
         Publish an event to be distributed to all subscribers. Event details are in the request body.
 
         Note that certain attributes of an event are assigned by the service when the event is published.
-        These attributes are allowed in the request body but ignored so that the JSON
-        received as part of a delivery may be modified and used when making a POST request to publish another event.
+        These attributes are allowed in the request body but ignored so that the JSON received as part of
+        a notification delivery may be modified and used when making a POST request to publish another event.
         The attributes that are allowed but ignored are
 
           - tenant
           - user
           - uuid
-          - type1
-          - type2
-          - type3
       operationId: postEvent
       requestBody:
         required: true
@@ -976,9 +973,9 @@ paths:
         - Test
       summary: Record a test sequence notification result.
       description: |
-        Callback endpoint for receiving events associated with a test sequence.
+        Callback endpoint for receiving a notification associated with a test sequence.
         Results will be recorded when notifications associated with the test are received via the callback.
-      operationId: recordTestEvent
+      operationId: recordTestNotification
       parameters:
         - name: subscriptionId
           in: path
@@ -991,7 +988,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Event'
+              $ref: '#/components/schemas/Notification'
       responses:
         '200':
           description: Test event received and recorded.
@@ -1105,16 +1102,35 @@ components:
         uuid:
           type: string
           format: uuid
-        type1:
-          type: string
-        type2:
-          type: string
-        type3:
-          type: string
         tenant:
           type: string
         user:
           type: string
+    # --- Notification ------------------------------------------------------------
+    Notification:
+      type: object
+      required:
+        - uuid
+        - tenant
+        - subscriptionId
+        - deliveryMethod
+        - event
+        - created
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        tenant:
+          type: string
+        subscriptionId:
+          type: string
+        deliveryMethod:
+          $ref: '#/components/schemas/DeliveryMethod'
+        event:
+          $ref: '#/components/schemas/Event'
+        created:
+          type: string
+          format: date-time
     # --- String types with constraints ------------------------------------
     IdString:
       type: string
