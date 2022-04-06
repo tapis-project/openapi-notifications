@@ -857,6 +857,7 @@ paths:
         The initial event will be published to the main queue and the subscription will be returned to the caller.
         The sequence of test events may be continued by publishing events that match the test subscription. 
         Results will be recorded when notifications associated with the test are received via the callback.
+        The first notification should be recorded shortly after the initial event is published.
       operationId: beginTestSequence
       parameters:
         - name: subscriptionTTL
@@ -865,6 +866,13 @@ paths:
           schema:
             type: integer
             default: 60
+      requestBody:
+        required: false
+        description: A json request body. Not used but required to correctly generate the client.
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
         '200':
           description: Test subscription created and test event published.
