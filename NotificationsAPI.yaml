@@ -1190,6 +1190,8 @@ components:
           type: string
         deliveryTargets:
           $ref: '#/components/schemas/DeliveryTargets'
+        ttlMinutes:
+          type: integer
     ReqPatchSubscription:
       type: object
       properties:
