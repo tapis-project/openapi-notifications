@@ -412,9 +412,9 @@ paths:
           - name
           - owner
           - enabled
-          - ttl
+          - ttlMinutes
 
-        Note that the attributes owner, enabled and ttl may be modified using other endpoints.
+        Note that the attributes owner, enabled and ttlMinutes may be modified using other endpoints.
       operationId: patchSubscription
       parameters:
         - name: name
@@ -483,9 +483,9 @@ paths:
           - name
           - owner
           - enabled
-          - ttl
+          - ttlMinutes
 
-        Note that the attributes owner, enabled and ttl may be modified using other endpoints.
+        Note that the attributes owner, enabled and ttlMinutes may be modified using other endpoints.
       operationId: putSubscription
       parameters:
         - name: name
@@ -731,7 +731,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
-  '/v3/notifications/subscriptions/{name}/updateTTL/{ttl}':
+  '/v3/notifications/subscriptions/{name}/updateTTL/{ttlMinutes}':
     post:
       tags:
         - Subscriptions
@@ -746,7 +746,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: ttl
+        - name: ttlMinutes
           in: path
           required: true
           schema:
@@ -840,10 +840,10 @@ paths:
           - name: <subscription_uuid>
           - typeFilter: notifications.test.*
           - subjectFilter: <subscription_uuid>
-          - deliveryMethod:
-            - Type: WEBHOOK
-            - Address: <tenant_base_url>/v3/notifications/test/callback/<subscription_uuid>
-          - ttl: 60
+          - deliveryTarget:
+            - deliveryMethod: WEBHOOK
+            - deliveryAddress: <tenant_base_url>/v3/notifications/test/callback/<subscription_uuid>
+          - ttlMinutes: 60
 
         The default TTL of 1 hour may be overridden using the query parameter *subscriptionTTL*.
 
@@ -1056,12 +1056,10 @@ components:
           type: string
         subjectFilter:
           type: string
-        deliveryMethods:
-          $ref: '#/components/schemas/DeliveryMethods'
-        ttl:
+        deliveryTargets:
+          $ref: '#/components/schemas/DeliveryTargets'
+        ttlMinutes:
           type: integer
-        notes:
-          type: object
         uuid:
           type: string
           format: uuid
@@ -1071,20 +1069,20 @@ components:
           type: string
         updated:
           type: string
-   # --- DeliveryMethods --------------------------------------------------------
-    DeliveryMethods:
+   # --- DeliveryTargets --------------------------------------------------------
+    DeliveryTargets:
       type: array
       items:
-        $ref: '#/components/schemas/DeliveryMethod'
-    # --- DeliveryMethod ------------------------------------------------------------
-    DeliveryMethod:
+        $ref: '#/components/schemas/DeliveryTarget'
+    # --- DeliveryTarget ------------------------------------------------------------
+    DeliveryTarget:
       type: object
       required:
-        - deliveryType
+        - deliveryMethod
         - deliveryAddress
       properties:
-        deliveryType:
-          $ref: '#/components/schemas/DeliveryTypeEnum'
+        deliveryMethod:
+          $ref: '#/components/schemas/DeliveryMethod'
         deliveryAddress:
           type: string
     # --- Event ------------------------------------------------------------
@@ -1120,7 +1118,7 @@ components:
         - uuid
         - tenant
         - name
-        - deliveryMethod
+        - deliveryTarget
         - event
         - created
       properties:
@@ -1131,8 +1129,8 @@ components:
           type: string
         name:
           type: string
-        deliveryMethod:
-          $ref: '#/components/schemas/DeliveryMethod'
+        deliveryTarget:
+          $ref: '#/components/schemas/DeliveryTarget'
         event:
           $ref: '#/components/schemas/Event'
         created:
@@ -1175,7 +1173,7 @@ components:
       type: object
       required:
         - typeFilter
-        - deliveryMethods
+        - deliveryTargets
       properties:
         name:
           $ref: '#/components/schemas/NameString'
@@ -1190,10 +1188,8 @@ components:
           type: string
         subjectFilter:
           type: string
-        deliveryMethods:
-          $ref: '#/components/schemas/DeliveryMethods'
-        notes:
-          type: object
+        deliveryTargets:
+          $ref: '#/components/schemas/DeliveryTargets'
     ReqPatchSubscription:
       type: object
       properties:
@@ -1203,10 +1199,8 @@ components:
           type: string
         subjectFilter:
           type: string
-        deliveryMethods:
-          $ref: '#/components/schemas/DeliveryMethods'
-        notes:
-          type: object
+        deliveryTargets:
+          $ref: '#/components/schemas/DeliveryTargets'
     ReqPutSubscription:
       type: object
       properties:
@@ -1216,10 +1210,8 @@ components:
           type: string
         subjectFilter:
           type: string
-        deliveryMethods:
-          $ref: '#/components/schemas/DeliveryMethods'
-        notes:
-          type: object
+        deliveryTargets:
+          $ref: '#/components/schemas/DeliveryTargets'
     ReqSearchSubscriptions:
       type: object
       required:
@@ -1378,7 +1370,7 @@ components:
     # -------------------------------------------------------------------------
     # --- Enums ---------------------------------------------------------------
     # -------------------------------------------------------------------------
-    DeliveryTypeEnum:
+    DeliveryMethod:
       type: string
       enum:
         - WEBHOOK
