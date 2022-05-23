@@ -1062,7 +1062,6 @@ components:
           type: integer
         uuid:
           type: string
-          format: uuid
         expiry:
           type: string
         created:
@@ -1106,7 +1105,6 @@ components:
           format: date-time
         uuid:
           type: string
-          format: uuid
         tenant:
           type: string
         user:
@@ -1124,7 +1122,6 @@ components:
       properties:
         uuid:
           type: string
-          format: uuid
         tenant:
           type: string
         name:
