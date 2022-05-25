@@ -460,77 +460,77 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
-    put:
-      tags:
-        - Subscriptions
-      summary: Update all updatable attributes of a subscription
-      description: |
-        Update all updatable attributes of a subscription using a request body identical to POST. Subscription must exist.
-
-        Note that certain attributes in the request body (such as tenant) are allowed but ignored so that the JSON
-        result returned by a GET may be modified and used when making a PUT request to update a subscription.
-
-        The attributes that are allowed but ignored for both PUT and POST are
-
-          - tenant
-          - uuid
-          - expiry
-          - created
-          - updated
-
-        In addition for a PUT operation the following non-updatable attributes are allowed but ignored
-
-          - name
-          - owner
-          - enabled
-          - ttlMinutes
-
-        Note that the attributes owner, enabled and ttlMinutes may be modified using other endpoints.
-      operationId: putSubscription
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/NameString'
-      requestBody:
-        required: true
-        description: A JSON object specifying changes to be applied.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReqPutSubscription'
-      responses:
-        '200':
-          description: Subscription updated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespResourceUrl'
-        '400':
-          description: Input error. Invalid JSON.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
-        '401':
-          description: Not authorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
-        '409':
-          description: Subscription already exists.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespResourceUrl'
-        '500':
-          description: Server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
+#    put:
+#      tags:
+#        - Subscriptions
+#      summary: Update all updatable attributes of a subscription
+#      description: |
+#        Update all updatable attributes of a subscription using a request body identical to POST. Subscription must exist.
+#
+#        Note that certain attributes in the request body (such as tenant) are allowed but ignored so that the JSON
+#        result returned by a GET may be modified and used when making a PUT request to update a subscription.
+#
+#        The attributes that are allowed but ignored for both PUT and POST are
+#
+#          - tenant
+#          - uuid
+#          - expiry
+#          - created
+#          - updated
+#
+#        In addition for a PUT operation the following non-updatable attributes are allowed but ignored
+#
+#          - name
+#          - owner
+#          - enabled
+#          - ttlMinutes
+#
+#        Note that the attributes owner, enabled and ttlMinutes may be modified using other endpoints.
+#      operationId: putSubscription
+#      parameters:
+#        - name: name
+#          in: path
+#          required: true
+#          schema:
+#            $ref: '#/components/schemas/NameString'
+#      requestBody:
+#        required: true
+#        description: A JSON object specifying changes to be applied.
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/ReqPutSubscription'
+#      responses:
+#        '200':
+#          description: Subscription updated.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/RespResourceUrl'
+#        '400':
+#          description: Input error. Invalid JSON.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/RespBasic'
+#        '401':
+#          description: Not authorized.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/RespBasic'
+#        '409':
+#          description: Subscription already exists.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/RespResourceUrl'
+#        '500':
+#          description: Server error.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/RespBasic'
     delete:
       tags:
         - Subscriptions
@@ -861,7 +861,7 @@ paths:
       parameters:
         - name: subscriptionTTL
           in: query
-          description: Subscription TTL in minutes. Default is 60 minutes.
+          description: Subscription TTL in minutes. Default is 60 minutes. A TTL of 0 or less indicates no expiration.
           schema:
             type: integer
             default: 60
@@ -1102,7 +1102,8 @@ components:
           type: string
         time:
           type: string
-          format: date-time
+        data:
+          type: string
         uuid:
           type: string
         tenant:
@@ -1132,7 +1133,6 @@ components:
           $ref: '#/components/schemas/Event'
         created:
           type: string
-          format: date-time
     # --- String types with constraints ------------------------------------
     NameString:
       type: string
@@ -1161,7 +1161,6 @@ components:
         receivedEvents:
           type: array
           items:
-            # TODO create Event component
             $ref: '#/components/schemas/Event'
     # -------------------------------------------------------------------------
     # --- Request objects -----------------------------------------------------
@@ -1170,6 +1169,7 @@ components:
       type: object
       required:
         - typeFilter
+        - subjectFilter
         - deliveryTargets
       properties:
         name:
@@ -1200,17 +1200,19 @@ components:
           type: string
         deliveryTargets:
           $ref: '#/components/schemas/DeliveryTargets'
-    ReqPutSubscription:
-      type: object
-      properties:
-        description:
-          $ref: '#/components/schemas/DescriptionString'
-        typeFilter:
-          type: string
-        subjectFilter:
-          type: string
-        deliveryTargets:
-          $ref: '#/components/schemas/DeliveryTargets'
+#    ReqPutSubscription:
+#      type: object
+#      properties:
+#        description:
+#          $ref: '#/components/schemas/DescriptionString'
+#        typeFilter:
+#          type: string
+#        subjectFilter:
+#          type: string
+#        deliveryTargets:
+#          $ref: '#/components/schemas/DeliveryTargets'
+#        ttlMinutes:
+#          type: integer
     ReqSearchSubscriptions:
       type: object
       required:
