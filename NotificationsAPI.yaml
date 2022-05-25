@@ -1057,7 +1057,7 @@ components:
         subjectFilter:
           type: string
         deliveryTargets:
-          $ref: '#/components/schemas/DeliveryTargets'
+          $ref: '#/components/schemas/NotifDeliveryTargets'
         ttlMinutes:
           type: integer
         uuid:
@@ -1068,20 +1068,20 @@ components:
           type: string
         updated:
           type: string
-   # --- DeliveryTargets --------------------------------------------------------
-    DeliveryTargets:
+   # --- NotifDeliveryTargets --------------------------------------------------------
+    NotifDeliveryTargets:
       type: array
       items:
-        $ref: '#/components/schemas/DeliveryTarget'
-    # --- DeliveryTarget ------------------------------------------------------------
-    DeliveryTarget:
+        $ref: '#/components/schemas/NotifDeliveryTarget'
+    # --- NotifDeliveryTarget ------------------------------------------------------------
+    NotifDeliveryTarget:
       type: object
       required:
         - deliveryMethod
         - deliveryAddress
       properties:
         deliveryMethod:
-          $ref: '#/components/schemas/DeliveryMethod'
+          $ref: '#/components/schemas/NotifDeliveryMethod'
         deliveryAddress:
           type: string
     # --- Event ------------------------------------------------------------
@@ -1128,7 +1128,7 @@ components:
         name:
           type: string
         deliveryTarget:
-          $ref: '#/components/schemas/DeliveryTarget'
+          $ref: '#/components/schemas/NotifDeliveryTarget'
         event:
           $ref: '#/components/schemas/Event'
         created:
@@ -1186,7 +1186,7 @@ components:
         subjectFilter:
           type: string
         deliveryTargets:
-          $ref: '#/components/schemas/DeliveryTargets'
+          $ref: '#/components/schemas/NotifDeliveryTargets'
         ttlMinutes:
           type: integer
     ReqPatchSubscription:
@@ -1199,7 +1199,7 @@ components:
         subjectFilter:
           type: string
         deliveryTargets:
-          $ref: '#/components/schemas/DeliveryTargets'
+          $ref: '#/components/schemas/NotifDeliveryTargets'
 #    ReqPutSubscription:
 #      type: object
 #      properties:
@@ -1210,7 +1210,7 @@ components:
 #        subjectFilter:
 #          type: string
 #        deliveryTargets:
-#          $ref: '#/components/schemas/DeliveryTargets'
+#          $ref: '#/components/schemas/NotifDeliveryTargets'
 #        ttlMinutes:
 #          type: integer
     ReqSearchSubscriptions:
@@ -1371,7 +1371,7 @@ components:
     # -------------------------------------------------------------------------
     # --- Enums ---------------------------------------------------------------
     # -------------------------------------------------------------------------
-    DeliveryMethod:
+    NotifDeliveryMethod:
       type: string
       enum:
         - WEBHOOK
