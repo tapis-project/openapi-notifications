@@ -76,9 +76,15 @@ paths:
       tags:
         - Subscriptions
       summary: Retrieve subscriptions
-      description: Retrieve list of subscriptions. Use search and select query parameters to limit results.
+      description: | 
+        Retrieve list of subscriptions. Use search and select query parameters to limit results.
+        Query parameter *owner* may be used to retrieve subscriptions owned by another user.
       operationId: getSubscriptions
       parameters:
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
         - name: search
           in: query
           description: Search conditions as a single query paramter. For example search=(name.like.MySub*)~(enabled.eq.true)
@@ -205,7 +211,9 @@ paths:
       tags:
         - Subscriptions
       summary: Retrieve list of subscriptions matching search conditions specified as query parameters
-      description: Retrieve details for subscriptions. Use query parameters to specify search conditions. For example owner.eq=jdoe
+      description: |
+        Retrieve details for subscriptions. Use query parameters to specify search conditions. For example owner.eq=jdoe
+        Query parameter *owner* may be used to retrieve subscriptions owned by another user.
       operationId: searchSubscriptionsQueryParameters
       parameters:
         - name: freeFormParameterName
@@ -218,6 +226,10 @@ paths:
             additionalProperties:
               type: string
           style: form
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
         - name: limit
           in: query
           description: Limit number of items returned. For example limit=10. Use -1 for unlimited. Default is 100.
@@ -282,8 +294,13 @@ paths:
       summary: Retrieve list of subscriptions matching search conditions
       description: |
         Retrieve details for subscriptions. Use request body to specify SQL-like search conditions.
+        Query parameter *owner* may be used to retrieve subscriptions owned by another user.
       operationId: searchSubscriptionsRequestBody
       parameters:
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
         - name: limit
           in: query
           description: Limit number of items returned. For example limit=10. Use -1 for unlimited. Default is 100.
@@ -356,6 +373,7 @@ paths:
       summary: Retrieve subscription details
       description: |
         Retrieve information for a subscription given the subscription name.
+        Query parameter *owner* may be used to retrieve a subscription owned by another user.
       operationId: getSubscription
       parameters:
         - name: name
@@ -363,6 +381,10 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
         - name: select
           in: query
           description: List of attributes to be included as part of the result item. For example select=name,owner,typeFilter
@@ -406,6 +428,7 @@ paths:
       summary: Update selected attributes of a subscription
       description: |
         Update selected attributes of a subscription. Request body may only contain updatable attributes. Subscription must exist.
+        Query parameter *owner* may be used to patch a subscription owned by another user.
 
         Attributes that may not be updated via PATCH are
 
@@ -414,7 +437,7 @@ paths:
           - enabled
           - ttlMinutes
 
-        Note that the attributes owner, enabled and ttlMinutes may be modified using other endpoints.
+        Note that the attributes enabled and ttlMinutes may be modified using other endpoints.
       operationId: patchSubscription
       parameters:
         - name: name
@@ -422,6 +445,10 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       requestBody:
         required: true
         description: A JSON object specifying changes to be applied.
@@ -460,77 +487,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
-#    put:
-#      tags:
-#        - Subscriptions
-#      summary: Update all updatable attributes of a subscription
-#      description: |
-#        Update all updatable attributes of a subscription using a request body identical to POST. Subscription must exist.
-#
-#        Note that certain attributes in the request body (such as tenant) are allowed but ignored so that the JSON
-#        result returned by a GET may be modified and used when making a PUT request to update a subscription.
-#
-#        The attributes that are allowed but ignored for both PUT and POST are
-#
-#          - tenant
-#          - uuid
-#          - expiry
-#          - created
-#          - updated
-#
-#        In addition for a PUT operation the following non-updatable attributes are allowed but ignored
-#
-#          - name
-#          - owner
-#          - enabled
-#          - ttlMinutes
-#
-#        Note that the attributes owner, enabled and ttlMinutes may be modified using other endpoints.
-#      operationId: putSubscription
-#      parameters:
-#        - name: name
-#          in: path
-#          required: true
-#          schema:
-#            $ref: '#/components/schemas/NameString'
-#      requestBody:
-#        required: true
-#        description: A JSON object specifying changes to be applied.
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/ReqPutSubscription'
-#      responses:
-#        '200':
-#          description: Subscription updated.
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/RespResourceUrl'
-#        '400':
-#          description: Input error. Invalid JSON.
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/RespBasic'
-#        '401':
-#          description: Not authorized.
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/RespBasic'
-#        '409':
-#          description: Subscription already exists.
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/RespResourceUrl'
-#        '500':
-#          description: Server error.
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/RespBasic'
     delete:
       tags:
         - Subscriptions
@@ -538,6 +494,7 @@ paths:
       description: |
         Remove a subscription. Events will stop being delivered.
         Subscription must be re-created to resume event delivery.
+        Query parameter *owner* may be used to delete a subscription owned by another user.
       operationId: deleteSubscription
       parameters:
         - name: name
@@ -545,6 +502,10 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       responses:
         '200':
           description: Subscription deleted.
@@ -577,6 +538,7 @@ paths:
       summary: Check if subscription is currently enabled
       description: |
         Check if a subscription is currently enabled, i.e. available for use.
+        Query parameter *owner* may be used to check a subscription owned by another user.
       operationId: isEnabled
       parameters:
         - name: name
@@ -584,6 +546,10 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       responses:
         '200':
           description: Check successful.
@@ -616,6 +582,7 @@ paths:
       summary: Update a subscription to be active
       description: |
         Update a subscription to be active. Matching events will start being delivered.
+        Query parameter *owner* may be used to enable a subscription owned by another user.
       operationId: enableSubscription
       parameters:
         - name: name
@@ -623,6 +590,10 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       responses:
         '200':
           description: Subscription enabled.
@@ -655,6 +626,7 @@ paths:
       summary: Update a subscription to be inactive
       description: |
         Update a subscription to be inactive. Matching events will stop being delivered.
+        Query parameter *owner* may be used to disable a subscription owned by another user.
       operationId: disableSubscription
       parameters:
         - name: name
@@ -662,53 +634,13 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-      responses:
-        '200':
-          description: Subscription disabled.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespChangeCount'
-        '401':
-          description: Not authorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
-        '404':
-          description: Subscription not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
-        '500':
-          description: Server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RespBasic'
-  '/v3/notifications/subscriptions/{name}/changeOwner/{userName}':
-    post:
-      tags:
-        - Subscriptions
-      summary: Change subscription owner
-      description: |
-        Change owner of a subscription.
-      operationId: changeSubscriptionOwner
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/NameString'
-        - name: userName
-          in: path
-          required: true
+        - name: owner
+          in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
         '200':
-          description: Subscription owner updated.
+          description: Subscription disabled.
           content:
             application/json:
               schema:
@@ -739,6 +671,7 @@ paths:
       description: |
         Update Time-To-Live (TTL) for a subscription.
         TTL provided as number of minutes. Use 0 to indicate subscription should never expire.
+        Query parameter *owner* may be used to update a subscription owned by another user.
       operationId: updateTTL
       parameters:
         - name: name
@@ -751,6 +684,10 @@ paths:
           required: true
           schema:
             type: integer
+        - name: owner
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       responses:
         '200':
           description: Subscription TTL updated.
