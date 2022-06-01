@@ -87,7 +87,7 @@ paths:
             $ref: '#/components/schemas/UserNameString'
         - name: search
           in: query
-          description: Search conditions as a single query paramter. For example search=(name.like.MySub*)~(enabled.eq.true)
+          description: Search conditions as a single query parameter. For example search=(name.like.MySub*)~(enabled.eq.true)
           schema:
             type: string
         - name: limit
@@ -153,20 +153,10 @@ paths:
         - Subscriptions
       summary: Create a subscription
       description: |
-        Create a subscription using a request body. 
-        Name must be unique within a tenant and can be composed of alphanumeric characters and the following
+        Create a subscription using a request body. Only services may create subscriptions.
+        For each owner the *name* must be unique and can be composed of alphanumeric characters and the following
         special characters [-._~].
         Description is optional with a maximum length of 2048 characters.
-
-        Note that certain attributes in the request body (such as tenant) are allowed but ignored so that the JSON
-        result returned by a GET may be modified and used when making a POST request to create a subscription.
-        The attributes that are allowed but ignored are
-
-          - tenant
-          - uuid
-          - expiry
-          - created
-          - updated
       operationId: postSubscription
       requestBody:
         required: true
@@ -437,7 +427,7 @@ paths:
           - enabled
           - ttlMinutes
 
-        Note that the attributes enabled and ttlMinutes may be modified using other endpoints.
+        Note that the attributes *enabled* and *ttlMinutes* may be modified using other endpoints.
       operationId: patchSubscription
       parameters:
         - name: name
@@ -721,16 +711,7 @@ paths:
         - Events
       summary: Publish an event
       description: |
-        Publish an event to be distributed to all subscribers. Event details are in the request body.
-
-        Note that certain attributes of an event are assigned by the service when the event is published.
-        These attributes are allowed in the request body but ignored so that the JSON received as part of
-        a notification delivery may be modified and used when making a POST request to publish another event.
-        The attributes that are allowed but ignored are
-
-          - tenant
-          - user
-          - uuid
+        Publish an event to be distributed to all subscribers. Only services may publish events.
       operationId: postEvent
       requestBody:
         required: true
@@ -785,7 +766,6 @@ paths:
         The default TTL of 1 hour may be overridden using the query parameter *subscriptionTTL*.
 
         The initial event will have the following properties:
-          - user: <api_User>
           - source: <tenant_base_url>/v3/notifications/test
           - type: notifications.test.begin
           - subject: <subscription_uuid>
@@ -1027,7 +1007,7 @@ components:
       required:
         - source
         - type
-        - time
+        - timestamp
       properties:
         source:
           type: string
@@ -1035,17 +1015,11 @@ components:
           type: string
         subject:
           type: string
-        seriesId:
-          type: string
-        time:
-          type: string
         data:
           type: string
-        uuid:
+        seriesId:
           type: string
-        tenant:
-          type: string
-        user:
+        timestamp:
           type: string
     # --- Notification ------------------------------------------------------------
     Notification:
@@ -1137,19 +1111,6 @@ components:
           type: string
         deliveryTargets:
           $ref: '#/components/schemas/DeliveryTargets'
-#    ReqPutSubscription:
-#      type: object
-#      properties:
-#        description:
-#          $ref: '#/components/schemas/DescriptionString'
-#        typeFilter:
-#          type: string
-#        subjectFilter:
-#          type: string
-#        deliveryTargets:
-#          $ref: '#/components/schemas/DeliveryTargets'
-#        ttlMinutes:
-#          type: integer
     ReqSearchSubscriptions:
       type: object
       required:
