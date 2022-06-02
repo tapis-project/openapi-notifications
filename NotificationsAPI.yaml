@@ -970,9 +970,9 @@ components:
           type: boolean
           default: true
         typeFilter:
-          type: string
+          $ref: '#/components/schemas/TypeFilterString'
         subjectFilter:
-          type: string
+          $ref: '#/components/schemas/SubjectFilterString'
         deliveryTargets:
           $ref: '#/components/schemas/DeliveryTargets'
         ttlMinutes:
@@ -1021,6 +1021,8 @@ components:
           type: string
         timestamp:
           type: string
+        deleteSubscriptionsMatchingSubject:
+          type: boolean
     # --- Notification ------------------------------------------------------------
     Notification:
       type: object
@@ -1048,7 +1050,7 @@ components:
     NameString:
       type: string
       minLength: 1
-      maxLength: 80
+      maxLength: 188
     DescriptionString:
       type: string
       maxLength: 2048
@@ -1061,6 +1063,14 @@ components:
       minLength: 1
       maxLength: 60
       default: "${apiUserId}"
+    TypeFilterString:
+      type: string
+      minLength: 5
+      maxLength: 128
+    SubjectFilterString:
+      type: string
+      minLength: 1
+      maxLength: 150
     # --- TestSequence --------------------------------------------------------
     TestSequence:
       type: object
@@ -1093,9 +1103,9 @@ components:
           type: boolean
           default: true
         typeFilter:
-          type: string
+          $ref: '#/components/schemas/TypeFilterString'
         subjectFilter:
-          type: string
+          $ref: '#/components/schemas/SubjectFilterString'
         deliveryTargets:
           $ref: '#/components/schemas/DeliveryTargets'
         ttlMinutes:
@@ -1106,9 +1116,9 @@ components:
         description:
           $ref: '#/components/schemas/DescriptionString'
         typeFilter:
-          type: string
+          $ref: '#/components/schemas/TypeFilterString'
         subjectFilter:
-          type: string
+          $ref: '#/components/schemas/SubjectFilterString'
         deliveryTargets:
           $ref: '#/components/schemas/DeliveryTargets'
     ReqSearchSubscriptions:
