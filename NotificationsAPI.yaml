@@ -78,16 +78,17 @@ paths:
       summary: Retrieve subscriptions
       description: | 
         Retrieve list of subscriptions owned by the requesting user. Use search and select query parameters to limit results.
-        Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
+        
+        Query parameter *ownedBy* may be used to retrieve subscriptions owned by a user other than the requesting user.
+        Ignored if *anyOwner* is set to true.
+        
+        Query parameter *anyOwner* may be used to retrieve all subscriptions owned by any user.
+        Query parameter *anyOwner* takes precedence over parameter *ownedBy*
       operationId: getSubscriptions
       parameters:
-        - name: ownedBy
-          in: query
-          schema:
-            $ref: '#/components/schemas/UserNameString'
         - name: search
           in: query
-          description: Search conditions as a single query parameter. For example search=(name.like.MySub*)~(enabled.eq.true)
+          description: Search conditions as a single query parameter. For example search=(name.like.MySubscr*)~(enabled.eq.true)
           schema:
             type: string
         - name: limit
@@ -123,6 +124,17 @@ paths:
           schema:
             type: string
             default: 'summaryAttributes'
+        - name: ownedBy
+          in: query
+          description: Retrieve subscriptions owned by a user other than the requesting user. Ignored if *anyOwner* is true.
+          schema:
+            $ref: '#/components/schemas/UserNameString'
+        - name: anyOwner
+          in: query
+          description: Include subscriptions owned by any user. If set to true then *ownedBy* is ignored. Default is false.
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Success.
@@ -217,10 +229,6 @@ paths:
             additionalProperties:
               type: string
           style: form
-        - name: ownedBy
-          in: query
-          schema:
-            $ref: '#/components/schemas/UserNameString'
         - name: limit
           in: query
           description: Limit number of items returned. For example limit=10. Use -1 for unlimited. Default is 100.
@@ -250,10 +258,14 @@ paths:
             default: false
         - name: select
           in: query
-          description: List of attributes to be included as part of each result item. For example select=name,owner,typeFilter
+          description: List of attributes to be included as part of each result item. For example select=owner,name,typeFilter
           schema:
             type: string
             default: 'summaryAttributes'
+        - name: ownedBy
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       responses:
         '200':
           description: Success.
@@ -289,10 +301,6 @@ paths:
         Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
       operationId: searchSubscriptionsRequestBody
       parameters:
-        - name: ownedBy
-          in: query
-          schema:
-            $ref: '#/components/schemas/UserNameString'
         - name: limit
           in: query
           description: Limit number of items returned. For example limit=10. Use -1 for unlimited. Default is 100.
@@ -326,6 +334,10 @@ paths:
           schema:
             type: string
             default: 'summaryAttributes'
+        - name: ownedBy
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       requestBody:
         required: true
         description: A JSON object specifying SQL-like search conditions as an array of strings. Strings are concatenated to form full search query.
@@ -373,16 +385,16 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: ownedBy
-          in: query
-          schema:
-            $ref: '#/components/schemas/UserNameString'
         - name: select
           in: query
           description: List of attributes to be included as part of the result item. For example select=name,owner,typeFilter
           schema:
             type: string
             default: 'allAttributes'
+        - name: ownedBy
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserNameString'
       responses:
         '200':
           description: Subscription found.
