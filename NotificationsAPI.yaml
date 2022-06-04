@@ -264,6 +264,7 @@ paths:
             default: 'summaryAttributes'
         - name: ownedBy
           in: query
+          description: Retrieve subscriptions owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
@@ -336,6 +337,7 @@ paths:
             default: 'summaryAttributes'
         - name: ownedBy
           in: query
+          description: Retrieve subscriptions owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       requestBody:
@@ -393,6 +395,7 @@ paths:
             default: 'allAttributes'
         - name: ownedBy
           in: query
+          description: Retrieve subscription owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
@@ -452,6 +455,7 @@ paths:
             $ref: '#/components/schemas/NameString'
         - name: ownedBy
           in: query
+          description: Patch a subscription owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       requestBody:
@@ -509,6 +513,7 @@ paths:
             $ref: '#/components/schemas/NameString'
         - name: ownedBy
           in: query
+          description: Delete a subscription owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
@@ -553,6 +558,7 @@ paths:
             $ref: '#/components/schemas/NameString'
         - name: ownedBy
           in: query
+          description: Check a subscription owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
@@ -597,6 +603,7 @@ paths:
             $ref: '#/components/schemas/NameString'
         - name: ownedBy
           in: query
+          description: Update a subscription owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
@@ -641,6 +648,7 @@ paths:
             $ref: '#/components/schemas/NameString'
         - name: ownedBy
           in: query
+          description: Update a subscription owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
@@ -691,6 +699,7 @@ paths:
             type: integer
         - name: ownedBy
           in: query
+          description: Update a subscription owned by a user other than the requesting user.
           schema:
             $ref: '#/components/schemas/UserNameString'
       responses:
