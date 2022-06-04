@@ -77,11 +77,11 @@ paths:
         - Subscriptions
       summary: Retrieve subscriptions
       description: | 
-        Retrieve list of subscriptions. Use search and select query parameters to limit results.
-        Query parameter *owner* may be used to retrieve subscriptions owned by another user.
+        Retrieve list of subscriptions owned by the requesting user. Use search and select query parameters to limit results.
+        Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
       operationId: getSubscriptions
       parameters:
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -202,8 +202,9 @@ paths:
         - Subscriptions
       summary: Retrieve list of subscriptions matching search conditions specified as query parameters
       description: |
-        Retrieve details for subscriptions. Use query parameters to specify search conditions. For example owner.eq=jdoe
-        Query parameter *owner* may be used to retrieve subscriptions owned by another user.
+        Retrieve details for subscriptions owned by the requesting user.
+        Use query parameters to specify search conditions. For example name.eq=MySubscription
+        Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
       operationId: searchSubscriptionsQueryParameters
       parameters:
         - name: freeFormParameterName
@@ -216,7 +217,7 @@ paths:
             additionalProperties:
               type: string
           style: form
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -283,11 +284,12 @@ paths:
         - Subscriptions
       summary: Retrieve list of subscriptions matching search conditions
       description: |
-        Retrieve details for subscriptions. Use request body to specify SQL-like search conditions.
-        Query parameter *owner* may be used to retrieve subscriptions owned by another user.
+        Retrieve details for subscriptions owned by the requesting user.
+        Use request body to specify SQL-like search conditions.
+        Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
       operationId: searchSubscriptionsRequestBody
       parameters:
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -362,8 +364,8 @@ paths:
         - Subscriptions
       summary: Retrieve subscription details
       description: |
-        Retrieve information for a subscription given the subscription name.
-        Query parameter *owner* may be used to retrieve a subscription owned by another user.
+        Retrieve information for a subscription owned by the requesting user.
+        Query parameter *ownedBy* may be used to retrieve a subscription owned by another user.
       operationId: getSubscription
       parameters:
         - name: name
@@ -371,7 +373,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -417,8 +419,9 @@ paths:
         - Subscriptions
       summary: Update selected attributes of a subscription
       description: |
-        Update selected attributes of a subscription. Request body may only contain updatable attributes. Subscription must exist.
-        Query parameter *owner* may be used to patch a subscription owned by another user.
+        Update selected attributes of a subscription owned by the requesting user.
+        Request body may only contain updatable attributes. Subscription must exist.
+        Query parameter *ownedBy* may be used to patch a subscription owned by another user.
 
         Attributes that may not be updated via PATCH are
 
@@ -435,7 +438,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -482,9 +485,9 @@ paths:
         - Subscriptions
       summary: Remove a subscription
       description: |
-        Remove a subscription. Events will stop being delivered.
+        Remove a subscription owned by the requesting user. Events will stop being delivered.
         Subscription must be re-created to resume event delivery.
-        Query parameter *owner* may be used to delete a subscription owned by another user.
+        Query parameter *ownedBy* may be used to delete a subscription owned by another user.
       operationId: deleteSubscription
       parameters:
         - name: name
@@ -492,7 +495,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -527,8 +530,8 @@ paths:
         - Subscriptions
       summary: Check if subscription is currently enabled
       description: |
-        Check if a subscription is currently enabled, i.e. available for use.
-        Query parameter *owner* may be used to check a subscription owned by another user.
+        Check if a subscription owned by the requesting user is currently enabled, i.e. available for use.
+        Query parameter *ownedBy* may be used to check a subscription owned by another user.
       operationId: isEnabled
       parameters:
         - name: name
@@ -536,7 +539,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -571,8 +574,8 @@ paths:
         - Subscriptions
       summary: Update a subscription to be active
       description: |
-        Update a subscription to be active. Matching events will start being delivered.
-        Query parameter *owner* may be used to enable a subscription owned by another user.
+        Update a subscription owned by the requesting user to be active. Matching events will start being delivered.
+        Query parameter *ownedBy* may be used to enable a subscription owned by another user.
       operationId: enableSubscription
       parameters:
         - name: name
@@ -580,7 +583,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -615,8 +618,8 @@ paths:
         - Subscriptions
       summary: Update a subscription to be inactive
       description: |
-        Update a subscription to be inactive. Matching events will stop being delivered.
-        Query parameter *owner* may be used to disable a subscription owned by another user.
+        Update a subscription owned by the requesting user to be inactive. Matching events will stop being delivered.
+        Query parameter *ownedBy* may be used to disable a subscription owned by another user.
       operationId: disableSubscription
       parameters:
         - name: name
@@ -624,7 +627,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NameString'
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
@@ -659,9 +662,9 @@ paths:
         - Subscriptions
       summary: Update Time-To-Live for a subscription.
       description: |
-        Update Time-To-Live (TTL) for a subscription.
+        Update Time-To-Live (TTL) for a subscription owned by the requesting user.
         TTL provided as number of minutes. Use 0 to indicate subscription should never expire.
-        Query parameter *owner* may be used to update a subscription owned by another user.
+        Query parameter *ownedBy* may be used to update a subscription owned by another user.
       operationId: updateTTL
       parameters:
         - name: name
@@ -674,7 +677,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: owner
+        - name: ownedBy
           in: query
           schema:
             $ref: '#/components/schemas/UserNameString'
