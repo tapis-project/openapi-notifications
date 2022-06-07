@@ -373,7 +373,7 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Retrieve information for a subscription owned by the requesting user.
+        Retrieve a subscription owned by the requesting user and whose name matches the provided value.
         Query parameter *ownedBy* may be used to retrieve a subscription owned by another user.
       operationId: getSubscriptionByName
       parameters:
@@ -428,7 +428,7 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Update selected attributes of a subscription owned by the requesting user.
+        Update selected attributes of a subscription owned by the requesting user and whose name matches the provided value.
         Request body may only contain updatable attributes. Subscription must exist.
         Query parameter *ownedBy* may be used to patch a subscription owned by another user.
 
@@ -494,8 +494,8 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Remove a subscription owned by the requesting user. Events will stop being delivered.
-        Subscription must be re-created to resume event delivery.
+        Delete a subscription owned by the requesting user and whose name matches the provided value.
+        Events will stop being delivered. Subscription must be re-created to resume event delivery.
         Query parameter *ownedBy* may be used to delete a subscription owned by another user.
       operationId: deleteSubscriptionByName
       parameters:
@@ -539,7 +539,7 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Retrieve information for a subscription owned by the requesting user.
+        Retrieve a subscription whose UUID matches the provided value.
       operationId: getSubscriptionByUuid
       parameters:
         - name: uuid
@@ -588,7 +588,7 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Remove a subscription whose UUID matches the provided value.
+        Delete a subscription whose UUID matches the provided value.
       operationId: deleteSubscriptionByUuid
       parameters:
         - name: uuid
@@ -626,12 +626,12 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Remove all subscriptions whose *subjectFilter* matches the specific *subject* provided.
+        Delete all subscriptions whose *subjectFilter* matches the specific *subject* provided.
 
-        Query parameter *ownedBy* may be used to remove subscriptions owned by a user other than the requesting user.
+        Query parameter *ownedBy* may be used to delete subscriptions owned by a user other than the requesting user.
         Ignored if *anyOwner* is set to true.
         
-        Query parameter *anyOwner* may be used to remove subscriptions owned by any user.
+        Query parameter *anyOwner* may be used to delete subscriptions owned by any user.
         Query parameter *anyOwner* takes precedence over parameter *ownedBy*
       operationId: deleteSubscriptionsBySubject
       parameters:
@@ -642,12 +642,12 @@ paths:
             type: string
         - name: ownedBy
           in: query
-          description: Remove subscriptions owned by a user other than the requesting user. Ignored if *anyOwner* is true.
+          description: Delete subscriptions owned by a user other than the requesting user. Ignored if *anyOwner* is true.
           schema:
             $ref: '#/components/schemas/UserNameString'
         - name: anyOwner
           in: query
-          description: Remove subscriptions owned by any user. If set to true then *ownedBy* is ignored. Default is false.
+          description: Delete subscriptions owned by any user. If set to true then *ownedBy* is ignored. Default is false.
           schema:
             type: boolean
             default: false
@@ -997,7 +997,7 @@ paths:
       tags:
         - Test
       description: |
-        Remove all test sequence artifacts including the subscription and results.
+        Delete all test sequence artifacts including the subscription and results.
       operationId: deleteTestSequence
       parameters:
         - name: name
