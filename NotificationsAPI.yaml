@@ -75,7 +75,6 @@ paths:
     get:
       tags:
         - Subscriptions
-      summary: Retrieve subscriptions
       description: | 
         Retrieve list of subscriptions owned by the requesting user. Use search and select query parameters to limit results.
         
@@ -163,7 +162,6 @@ paths:
     post:
       tags:
         - Subscriptions
-      summary: Create a subscription
       description: |
         Create a subscription using a request body. Only services may create subscriptions.
         For each owner the *name* must be unique and can be composed of alphanumeric characters and the following
@@ -212,7 +210,6 @@ paths:
     get:
       tags:
         - Subscriptions
-      summary: Retrieve list of subscriptions matching search conditions specified as query parameters
       description: |
         Retrieve details for subscriptions owned by the requesting user.
         Use query parameters to specify search conditions. For example name.eq=MySubscription
@@ -295,7 +292,6 @@ paths:
     post:
       tags:
         - Subscriptions
-      summary: Retrieve list of subscriptions matching search conditions
       description: |
         Retrieve details for subscriptions owned by the requesting user.
         Use request body to specify SQL-like search conditions.
@@ -372,15 +368,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
-  '/v3/notifications/subscriptions/{name}':
+  '/v3/notifications/subscriptions/byName/{name}':
     get:
       tags:
         - Subscriptions
-      summary: Retrieve subscription details
       description: |
         Retrieve information for a subscription owned by the requesting user.
         Query parameter *ownedBy* may be used to retrieve a subscription owned by another user.
-      operationId: getSubscription
+      operationId: getSubscriptionByName
       parameters:
         - name: name
           in: path
@@ -432,7 +427,6 @@ paths:
     patch:
       tags:
         - Subscriptions
-      summary: Update selected attributes of a subscription
       description: |
         Update selected attributes of a subscription owned by the requesting user.
         Request body may only contain updatable attributes. Subscription must exist.
@@ -446,7 +440,7 @@ paths:
           - ttlMinutes
 
         Note that the attributes *enabled* and *ttlMinutes* may be modified using other endpoints.
-      operationId: patchSubscription
+      operationId: patchSubscriptionByName
       parameters:
         - name: name
           in: path
@@ -499,12 +493,11 @@ paths:
     delete:
       tags:
         - Subscriptions
-      summary: Remove a subscription
       description: |
         Remove a subscription owned by the requesting user. Events will stop being delivered.
         Subscription must be re-created to resume event delivery.
         Query parameter *ownedBy* may be used to delete a subscription owned by another user.
-      operationId: deleteSubscription
+      operationId: deleteSubscriptionByName
       parameters:
         - name: name
           in: path
@@ -541,11 +534,146 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/byUuid/{uuid}':
+    get:
+      tags:
+        - Subscriptions
+      description: |
+        Retrieve information for a subscription owned by the requesting user.
+      operationId: getSubscriptionByUuid
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: select
+          in: query
+          description: List of attributes to be included as part of the result item. For example select=name,owner,typeFilter
+          schema:
+            type: string
+            default: 'allAttributes'
+      responses:
+        '200':
+          description: Subscription found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespSubscription'
+        '400':
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+    delete:
+      tags:
+        - Subscriptions
+      description: |
+        Remove a subscription whose UUID matches the provided value.
+      operationId: deleteSubscriptionByUuid
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '404':
+          description: Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  '/v3/notifications/subscriptions/bySubject/{subject}':
+    delete:
+      tags:
+        - Subscriptions
+      description: |
+        Remove all subscriptions whose *subjectFilter* matches the specific *subject* provided.
+
+        Query parameter *ownedBy* may be used to remove subscriptions owned by a user other than the requesting user.
+        Ignored if *anyOwner* is set to true.
+        
+        Query parameter *anyOwner* may be used to remove subscriptions owned by any user.
+        Query parameter *anyOwner* takes precedence over parameter *ownedBy*
+      operationId: deleteSubscriptionsBySubject
+      parameters:
+        - name: subject
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: ownedBy
+          in: query
+          description: Remove subscriptions owned by a user other than the requesting user. Ignored if *anyOwner* is true.
+          schema:
+            $ref: '#/components/schemas/UserNameString'
+        - name: anyOwner
+          in: query
+          description: Remove subscriptions owned by any user. If set to true then *ownedBy* is ignored. Default is false.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Subscriptions deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespChangeCount'
+        '401':
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
   '/v3/notifications/subscriptions/{name}/isEnabled':
     get:
       tags:
         - Subscriptions
-      summary: Check if subscription is currently enabled
       description: |
         Check if a subscription owned by the requesting user is currently enabled, i.e. available for use.
         Query parameter *ownedBy* may be used to check a subscription owned by another user.
@@ -590,7 +718,6 @@ paths:
     post:
       tags:
         - Subscriptions
-      summary: Update a subscription to be active
       description: |
         Update a subscription owned by the requesting user to be active. Matching events will start being delivered.
         Query parameter *ownedBy* may be used to enable a subscription owned by another user.
@@ -635,7 +762,6 @@ paths:
     post:
       tags:
         - Subscriptions
-      summary: Update a subscription to be inactive
       description: |
         Update a subscription owned by the requesting user to be inactive. Matching events will stop being delivered.
         Query parameter *ownedBy* may be used to disable a subscription owned by another user.
@@ -680,7 +806,6 @@ paths:
     post:
       tags:
         - Subscriptions
-      summary: Update Time-To-Live for a subscription.
       description: |
         Update Time-To-Live (TTL) for a subscription owned by the requesting user.
         TTL provided as number of minutes. Use 0 to indicate subscription should never expire.
@@ -733,7 +858,6 @@ paths:
     post:
       tags:
         - Events
-      summary: Publish an event
       description: |
         Publish an event to be distributed to all subscribers. Only services may publish events.
       operationId: postEvent
@@ -774,7 +898,6 @@ paths:
     post:
       tags:
         - Test
-      summary: Start a test sequence by creating a subscription and publishing an event
       description: |
         Start a test sequence by creating a subscription and publishing an initial event matching the subscription.
         The subscription will have the following properties:
@@ -830,7 +953,6 @@ paths:
     get:
       tags:
         - Test
-      summary: Retrieve status and history for a test sequence.
       description: |
         Retrieve status and result history for a test sequence created using the endpoint *test/begin*.
       operationId: getTestSequence
@@ -874,7 +996,6 @@ paths:
     delete:
       tags:
         - Test
-      summary: Remove all test sequence artifacts.
       description: |
         Remove all test sequence artifacts including the subscription and results.
       operationId: deleteTestSequence
@@ -919,7 +1040,6 @@ paths:
     post:
       tags:
         - Test
-      summary: Record a test sequence notification result.
       description: |
         Callback endpoint for receiving a notification associated with a test sequence.
         Results will be recorded when notifications associated with the test are received via the callback.
