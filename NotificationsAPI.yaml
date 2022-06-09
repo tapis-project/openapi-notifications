@@ -43,7 +43,7 @@ paths:
     get:
       tags:
         - General
-      description: Health check.
+      description: Health check. Lightweight non-authenticated check that service is alive.
       operationId: healthCheck
       responses:
         '200':
@@ -58,7 +58,7 @@ paths:
     get:
       tags:
         - General
-      description: Ready check.
+      description: Ready check. Non-authenticated check that service is ready to do work.
       operationId: readyCheck
       responses:
         '200':
@@ -68,7 +68,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RespBasic'
         '503':
-          description: Service unavailable.
+          description: Service not ready.
 
   # --- Paths for /notifications/subscriptions ------------------------------------------------
   '/v3/notifications/subscriptions':
@@ -87,7 +87,7 @@ paths:
       parameters:
         - name: search
           in: query
-          description: Search conditions as a single query parameter. For example search=(name.like.MySubscr*)~(enabled.eq.true)
+          description: Search conditions as a single query parameter. For example search=(name.like.MySubscr*)~(enabled.eq.false)
           schema:
             type: string
         - name: limit
@@ -119,7 +119,7 @@ paths:
             default: false
         - name: select
           in: query
-          description: List of attributes to be included as part of each result item. For example select=name,owner,typeFilter
+          description: List of attributes to be included as part of each result item. Keywords *allAttributes* and *summaryAttributes* are supported. For example select=owner,name,typeFilter.
           schema:
             type: string
             default: 'summaryAttributes'
@@ -166,17 +166,17 @@ paths:
         Create a subscription using a request body. Only services may create subscriptions.
 
         For each owner the *name* must be unique and can be composed of alphanumeric characters and the following
-        special characters [-._~].
+        special characters [-._~]. If attribute *name* is not provided then the service will generate one.
         The attributes *typeFilter*, *subjectFilter* and *deliveryTargets* are required.
-        Subscription properties:
+        Subscription attributes:
           - name: Optional short descriptive name. *owner+name* must be unique. If one is not provided the service will create one.
           - description: Optional more verbose description. Maximum length of 2048 characters.
-          - typeFilter: Filter to use when matching events. A series of 3 fields separated by the dot character. May be a specific type such as jobs.job.complete or include wildcards to indicate multiple types are of interest, such as jobs.new_status.*.
-          - subjectFilter: Filter to use when matching events. This may be a specific subject such as a job Id or the wildcard character *.
-          - deliveryTargets: List of delivery targets to be used when delivering a matching event. Targets include delivery method (EMAIL or WEBHOOK) and delivery address.
           - owner: A specific user set at create time. Default is *${apiUserId}*.
-          - expiry: Time at which the subscription expires. Maintained by the service.
-          - ttlMinutes: Time to live in minutes specified when subscription was created or ttl was updated. Default is one week from creation. A TTL of 0 or less indicates no expiration.
+          - enabled: Indicates if subscription is active. By default enabled is true. 
+          - typeFilter: Filter to use when matching events. Filter for event type. Has three dot separated parts: *service*, *category* and *detail*. Each field may be a specific type or the wildcard character. Examples are *jobs.job.complete*, *jobs.new_status.**.
+          - subjectFilter: Filter to use when matching events. Filter for subject. This may be a specific subject such as a job Id or the wildcard character *.
+          - deliveryTargets: List of delivery targets to be used when delivering a matching event. Each target includes delivery method (EMAIL or WEBHOOK) and delivery address.
+          - ttlMinutes: Time to live in minutes specified when subscription is created or TTL is updated. Service will compute expiry based on TTL. Default is one week from creation. Value of 0 indicates no expiration.
       operationId: postSubscription
       requestBody:
         required: true
@@ -222,7 +222,7 @@ paths:
         - Subscriptions
       description: |
         Retrieve details for subscriptions owned by the requesting user.
-        Use query parameters to specify search conditions. For example name.eq=MySubscription
+        Use query parameters to specify search conditions. For example name.eq=MySubscription.
         Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
       operationId: searchSubscriptionsQueryParameters
       parameters:
@@ -265,7 +265,7 @@ paths:
             default: false
         - name: select
           in: query
-          description: List of attributes to be included as part of each result item. For example select=owner,name,typeFilter
+          description: List of attributes to be included as part of each result item. Keywords *allAttributes* and *summaryAttributes* are supported. For example select=owner,name,typeFilter
           schema:
             type: string
             default: 'summaryAttributes'
@@ -337,7 +337,7 @@ paths:
             default: false
         - name: select
           in: query
-          description: List of attributes to be included as part of each result item. For example select=name,owner,typeFilter
+          description: List of attributes to be included as part of each result item. Keywords *allAttributes* and *summaryAttributes* are supported. For example select=owner,name,typeFilter
           schema:
             type: string
             default: 'summaryAttributes'
@@ -385,6 +385,20 @@ paths:
       description: |
         Retrieve a subscription owned by the requesting user and whose name matches the provided value.
         Query parameter *ownedBy* may be used to retrieve a subscription owned by another user.
+
+        Summary of subscription attributes. For details please see *postSubscription*:
+          - owner: Tapis user who owns the subscription.
+          - name: Short descriptive name.
+          - description: Optional more verbose description.
+          - enabled: Indicates if subscription is currently active. 
+          - typeFilter: Filter to use when matching events. Format is *<service>.<category>.<detail>*. Each field may be a specific type or the wildcard character *.
+          - subjectFilter: Filter to use when matching events. Filter for subject. May be wildcard character *.
+          - deliveryTargets: List of delivery targets to be used when delivering a matching event.
+          - ttlMinutes: Time to live in minutes. 0 indicates no expiration.
+          - uuid: A UUID generated by the service.
+          - expiry: Time at which the subscription expires and will be deleted. Maintained by the service.
+          - created: When created. Maintained by the service.
+          - updated: When last updated. Maintained by the service.
       operationId: getSubscriptionByName
       parameters:
         - name: name
@@ -394,7 +408,7 @@ paths:
             $ref: '#/components/schemas/NameString'
         - name: select
           in: query
-          description: List of attributes to be included as part of the result item. For example select=name,owner,typeFilter
+          description: List of attributes to be included as part of the result item. Keywords *allAttributes* and *summaryAttributes* are supported. For example select=owner,name,typeFilter
           schema:
             type: string
             default: 'allAttributes'
@@ -550,6 +564,20 @@ paths:
         - Subscriptions
       description: |
         Retrieve a subscription whose UUID matches the provided value.
+
+        Summary of subscription attributes. For details please see *postSubscription*:
+          - owner: Tapis user who owns the subscription.
+          - name: Short descriptive name.
+          - description: Optional more verbose description.
+          - enabled: Indicates if subscription is currently active. 
+          - typeFilter: Filter to use when matching events. Format is *<service>.<category>.<detail>*. Each field may be a specific type or the wildcard character *.
+          - subjectFilter: Filter to use when matching events. Filter for subject. May be wildcard character *.
+          - deliveryTargets: List of delivery targets to be used when delivering a matching event.
+          - ttlMinutes: Time to live in minutes. 0 indicates no expiration.
+          - uuid: A UUID generated by the service.
+          - expiry: Time at which the subscription expires and will be deleted. Maintained by the service.
+          - created: When created. Maintained by the service.
+          - updated: When last updated. Maintained by the service.
       operationId: getSubscriptionByUuid
       parameters:
         - name: uuid
@@ -559,7 +587,7 @@ paths:
             type: string
         - name: select
           in: query
-          description: List of attributes to be included as part of the result item. For example select=name,owner,typeFilter
+          description: List of attributes to be included as part of the result item. Keywords *allAttributes* and *summaryAttributes* are supported. For example select=owner,name,typeFilter
           schema:
             type: string
             default: 'allAttributes'
@@ -685,7 +713,7 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Check if a subscription owned by the requesting user is currently enabled, i.e. available for use.
+        Check if a subscription owned by the requesting user is currently active.
         Query parameter *ownedBy* may be used to check a subscription owned by another user.
       operationId: isEnabled
       parameters:
@@ -871,14 +899,17 @@ paths:
       description: |
         Publish an event to be distributed to all subscribers. Only services may publish events.
         
-        The attributes *source*, *type* and *timestamp* are required. A UUID for the event is generated by the service.
-        Event properties:
-          - source: Context in which event happened, e.g. for a job completed event it might be in the form designsafe.tapis.io/v3/jobs and for a system created event it might be tacc.tapis.io/v3/systems.
-          - type: Type of event. A series of 3 fields separated by the dot character. The first field is the service name, the second field is the category and the third field is the detail. For example, jobs.new_status.complete or systems.system.create or files.object.delete
-          - subject: Subject of event in the context of event producer. For example a job Id, system Id, role name, etc.
+        The attributes *source*, *type* and *timestamp* are required.
+        Event attributes:
+          - source: Context in which event happened: Examples: *designsafe.tapis.io/v3/jobs*, *tacc.tapis.io/v3/systems*.
+          - type: Type of event. Used for routing notifications. A series of 3 fields separated by the dot character. Pattern is *<service>.<category>.<detail>*. Examples: *jobs.new_status.complete*, *systems.system.create*, *files.object.delete*
+          - subject: Subject of event in the context of the service. Examples: job Id, system Id, file path, role name, etc.
           - seriesId: Optional Id that may be used to group events from the same source in a series, thereby preserving event order during notification delivery.
           - timestamp: When the event happened.
           - data: Optional additional information associated with the event. Data specific to the service associated with the event.
+        
+        Note that events are not persisted by the front end api service. When received they are simply sent to a
+        message broker. The back end dispatch service will persist events temporarily in order to support recovery.
       operationId: postEvent
       requestBody:
         required: true
