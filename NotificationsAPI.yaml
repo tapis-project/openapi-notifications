@@ -168,6 +168,7 @@ paths:
         For each owner the *name* must be unique and can be composed of alphanumeric characters and the following
         special characters [-._~]. If attribute *name* is not provided then the service will generate one.
         The attributes *typeFilter*, *subjectFilter* and *deliveryTargets* are required.
+        
         Subscription attributes:
           - name: Optional short descriptive name. *owner+name* must be unique. If one is not provided the service will create one.
           - description: Optional more verbose description. Maximum length of 2048 characters.
