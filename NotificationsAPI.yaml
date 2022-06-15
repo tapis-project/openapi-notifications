@@ -902,7 +902,7 @@ paths:
         
         The attributes *source*, *type* and *timestamp* are required.
         Event attributes:
-          - source: Context in which event happened: Examples: *designsafe.tapis.io/v3/jobs*, *tacc.tapis.io/v3/systems*.
+          - source: Context in which event happened: Examples: *Jobs*, *Systems*.
           - type: Type of event. Used for routing notifications. A series of 3 fields separated by the dot character. Pattern is *<service>.<category>.<detail>*. Examples: *jobs.new_status.complete*, *systems.system.create*, *files.object.delete*
           - subject: Subject of event in the context of the service. Examples: job Id, system Id, file path, role name, etc.
           - seriesId: Optional Id that may be used to group events from the same source in a series, thereby preserving event order during notification delivery.
@@ -912,6 +912,12 @@ paths:
         Note that events are not persisted by the front end api service. When received they are simply sent to a
         message broker. The back end dispatch service will persist events temporarily in order to support recovery.
       operationId: postEvent
+      parameters:
+        - name: tenant
+          in: query
+          description: Highly restricted. Tenant associated with the event. Only services may set the tenant. By default, oboTenant from the JWT is used.
+          schema:
+            type: string
       requestBody:
         required: true
         description: A JSON object specifying the event details.
