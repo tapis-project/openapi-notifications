@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Tapis Notifications API
   description: The Tapis Notifications API provides for management of subscriptions and event publication
-  version: '1.4.0'
+  version: '1.4.1'
   termsOfService: "https://tapis-project.org"
   contact:
     name: "Notifications API - CICSupport"
@@ -911,6 +911,17 @@ paths:
         
         Note that events are not persisted by the front end api service. When received they are simply sent to a
         message broker. The back end dispatch service will persist events temporarily in order to support recovery.
+        
+        An event is delivered to the delivery target in a Notification object. Notification attributes:
+          - uuid: Unique identifier for the notification.
+          - event: All information contained in the event.
+          - eventUuid: Unique identifier for the event.
+          - tenant: tenant associated with the event.
+          - deliveryTarget: the delivery target
+          - created: When the notification was created.
+        
+        For details on the schema for a Notification object, please see the request body specification included under
+        the endpoint for *recordTestNotification*, at path */v3/notifications/test/callback/{name}*
       operationId: postEvent
       parameters:
         - name: tenant
