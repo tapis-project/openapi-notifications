@@ -932,7 +932,7 @@ paths:
         Tracking data for a series is created automatically when the first event in a series is received. Note that
         the subject is required. If an event is received without a subject then it will not be part of a series even
         if the attribute *seriesId* is set. A series may be ended by publishing an event with the attribute
-        *endSeries* set to true or calling the endpoint *notifications/events/endSeries. When a series is ended
+        *endSeries* set to true or by calling the endpoint *notifications/events/endSeries*. When a series is ended
         tracking data for that series is deleted. This effectively resets the seriesSeqCount. A subsequent event
         published for the same series will cause tracking data to be re-created and seriesSeqCount set to 1.
 
@@ -1155,7 +1155,7 @@ paths:
       tags:
         - Test
       description: |
-        Start a test sequence by creating a subscription and publishing an initial event matching the subscription.
+        Start a test sequence by creating a subscription and publishing one or more events matching the subscription.
         Only services may perform this operation.
         
         The subscription will have the following properties:
@@ -1174,6 +1174,7 @@ paths:
           - source: <tenant_base_url>/v3/notifications/test
           - type: notifications.test.begin
           - subject: <subscription_uuid>
+          - seriesId: <subscription_uuid>
 
         The initial event will be published to the main queue and the subscription will be returned to the caller.
         The sequence of test events may be continued by publishing events that match the test subscription. 
@@ -1187,6 +1188,12 @@ paths:
           schema:
             type: integer
             default: 60
+        - name: numberOfEvents
+          in: query
+          description: Number of events to publish in the series. Default is 1.
+          schema:
+            type: integer
+            default: 1
       requestBody:
         required: false
         description: A json request body. Not used but required to correctly generate the client.
@@ -1255,7 +1262,8 @@ paths:
       tags:
         - Test
       description: |
-        Delete all test sequence artifacts including the subscription and results. Only services may perform this operation.
+        Delete all test sequence artifacts including the subscription, results and event series tracking data.
+        Only services may perform this operation.
       operationId: deleteTestSequence
       parameters:
         - name: name
