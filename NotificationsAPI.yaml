@@ -395,7 +395,7 @@ paths:
           - name: Short descriptive name.
           - description: Optional more verbose description.
           - enabled: Indicates if subscription is currently active. 
-          - typeFilter: Filter to use when matching events. Format is *<service>.<category>.<detail>*. Each field may be a specific type or the wildcard character *.
+          - typeFilter: Filter to use when matching events. Format is *service.category.detail*. Each field may be a specific type or the wildcard character *.
           - subjectFilter: Filter to use when matching events. Filter for subject. May be wildcard character *.
           - deliveryTargets: List of delivery targets to be used when delivering a matching event.
           - ttlMinutes: Time to live in minutes. 0 indicates no expiration.
@@ -578,7 +578,7 @@ paths:
           - name: Short descriptive name.
           - description: Optional more verbose description.
           - enabled: Indicates if subscription is currently active. 
-          - typeFilter: Filter to use when matching events. Format is *<service>.<category>.<detail>*. Each field may be a specific type or the wildcard character *.
+          - typeFilter: Filter to use when matching events. Format is *service.category.detail*. Each field may be a specific type or the wildcard character *.
           - subjectFilter: Filter to use when matching events. Filter for subject. May be wildcard character *.
           - deliveryTargets: List of delivery targets to be used when delivering a matching event.
           - ttlMinutes: Time to live in minutes. 0 indicates no expiration.
@@ -1159,22 +1159,22 @@ paths:
         Only services may perform this operation.
         
         The subscription will have the following properties:
-          - owner: <api_user>
-          - name: <subscription_uuid>
+          - owner: *api_user*
+          - name: *subscription_uuid*
           - typeFilter: notifications.test.*
-          - subjectFilter: <subscription_uuid>
+          - subjectFilter: *subscription_uuid*
           - deliveryTarget:
             - deliveryMethod: WEBHOOK
-            - deliveryAddress: <tenant_base_url>/v3/notifications/test/callback/<subscription_uuid>
+            - deliveryAddress: *tenant_base_url*/v3/notifications/test/callback/*subscription_uuid*
           - ttlMinutes: 60
 
         The default TTL of 1 hour may be overridden using the query parameter *subscriptionTTL*.
 
         The initial event will have the following properties:
-          - source: <tenant_base_url>/v3/notifications/test
+          - source: *tenant_base_url*/v3/notifications/test
           - type: notifications.test.begin
-          - subject: <subscription_uuid>
-          - seriesId: <subscription_uuid>
+          - subject: *subscription_uuid*
+          - seriesId: *subscription_uuid*
 
         The initial event will be published to the main queue and the subscription will be returned to the caller.
         The sequence of test events may be continued by publishing events that match the test subscription. 
