@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Tapis Notifications API
   description: The Tapis Notifications API provides for management of subscriptions and event publication
-  version: '1.6.1'
+  version: '1.6.2'
   termsOfService: "https://tapis-project.org"
   contact:
     name: "Notifications API - CICSupport"
@@ -948,6 +948,7 @@ paths:
           - *tenant*: Tapis tenant associated with the event.
           - *uuid*: Tapis generated unique identifier.
           - *user*: Tapis user associated with the event.
+          - *received*: Tapis generated timestamp for when the event was received by Tapis.
           - *seriesSeqCount*: Tapis generated counter for seriesId. Can be used by event receivers to track expected order. Events will be sent in order but may not be received in order.
         
         Note that events are not persisted by the front end api service. When received they are simply sent to a
@@ -972,6 +973,7 @@ paths:
           - tenant
           - uuid
           - user
+          - received
           - seriesSeqCount
       operationId: publishEvent
       parameters:
@@ -1156,6 +1158,7 @@ paths:
         - Test
       description: |
         Start a test sequence by creating a subscription and publishing one or more events matching the subscription.
+        If more than one event requested then events will be published at the rate of 1 every 3 seconds.
         Only services may perform this operation.
         
         The subscription will have the following properties:
@@ -1176,7 +1179,7 @@ paths:
           - subject: *subscription_uuid*
           - seriesId: *subscription_uuid*
 
-        The initial event will be published to the main queue and the subscription will be returned to the caller.
+        The requested number of events will be published to the main queue and the subscription will be returned to the caller.
         The sequence of test events may be continued by publishing events that match the test subscription. 
         Results will be recorded when notifications associated with the test are received via the callback.
         The first notification should be recorded shortly after the initial event is published.
@@ -1442,6 +1445,8 @@ components:
         user:
           type: string
         uuid:
+          type: string
+        received:
           type: string
         seriesSeqCount:
           type: integer
