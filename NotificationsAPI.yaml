@@ -1111,6 +1111,10 @@ paths:
         End an event series. Series tracking data will be deleted. A subsequent new event published with the same
         tenant, source, subject and seriesId will recreate the series tracking data with the initial *seriesSeqCount*
         set to 1. Associated event source, subject and seriesId must be provided in the request body.
+        
+        Note that the attributes *tenant* and *seriesSeqCount* in the request body are allowed but ignored.
+        These attributes are maintained by Tapis as part of the series tracking data. To specify a tenant other
+        than the oboTenant, please use the query parameter.
       operationId: endEventSeries
       parameters:
         - name: tenant
@@ -1193,7 +1197,7 @@ paths:
             default: 60
         - name: numberOfEvents
           in: query
-          description: Number of events to publish in the series. Default is 1.
+          description: Number of events to publish when starting the series. Default is 1.
           schema:
             type: integer
             default: 1
