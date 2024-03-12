@@ -932,7 +932,7 @@ paths:
         Tracking data for a series is created automatically when the first event in a series is received. Note that
         the subject is required. If an event is received without a subject then it will not be part of a series even
         if the attribute *seriesId* is set. A series may be ended by publishing an event with the attribute
-        *endSeries* set to true or by calling the endpoint *notifications/events/endSeries*. When a series is ended
+        *endSeries* set to true or by calling the endpoint *notifications/events/endSeries*. When a series is ended,
         tracking data for that series is deleted. This effectively resets the seriesSeqCount. A subsequent event
         published for the same series will cause tracking data to be re-created and seriesSeqCount set to 1.
 
@@ -949,7 +949,7 @@ paths:
           - *uuid*: Tapis generated unique identifier.
           - *user*: Tapis user associated with the event.
           - *received*: Tapis generated timestamp for when the event was received by Tapis.
-          - *seriesSeqCount*: Tapis generated counter for seriesId. Can be used by event receivers to track expected order. Events will be sent in order but may not be received in order.
+          - *seriesSeqCount*: Tapis generated counter for seriesId. Can be used by notification receivers to track expected order. Notifications for events will be sent in order but may not be received in order.
         
         Note that events are not persisted by the front end api service. When received they are simply sent to a
         message broker. The back end dispatch service will persist events temporarily in order to support recovery.
@@ -1187,6 +1187,8 @@ paths:
         The sequence of test events may be continued by publishing events that match the test subscription. 
         Results will be recorded when notifications associated with the test are received via the callback.
         The first notification should be recorded shortly after the initial event is published.
+        If query parameter *endSeries* is set to true (the default), when the final event of the test sequence is
+        sent it will have the event attribute *endSeries* set to true. This will result in removal of series tracking data.
       operationId: beginTestSequence
       parameters:
         - name: subscriptionTTL
@@ -1201,6 +1203,12 @@ paths:
           schema:
             type: integer
             default: 1
+        - name: endSeries
+          in: query
+          description: Flag indicating if tracking data for series should be removed when final event in the test sequence is sent. Default is true.
+          schema:
+            type: boolean
+            default: true
       requestBody:
         required: false
         description: A json request body. Not used but required to correctly generate the client.
