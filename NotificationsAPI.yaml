@@ -672,7 +672,7 @@ paths:
       tags:
         - Subscriptions
       description: |
-        Delete all subscriptions whose *subjectFilter* matches the specific *subject* provided.
+        Delete all subscriptions whose *subjectFilter* exactly matches the specific *subject* provided.
         Only services may perform this operation.
 
         Query parameter *ownedBy* may be used to delete subscriptions owned by a user other than the requesting user.
@@ -931,10 +931,11 @@ paths:
         
         Tracking data for a series is created automatically when the first event in a series is received. Note that
         the subject is required. If an event is received without a subject then it will not be part of a series even
-        if the attribute *seriesId* is set. A series may be ended by publishing an event with the attribute
-        *endSeries* set to true or by calling the endpoint *notifications/events/endSeries*. When a series is ended,
-        tracking data for that series is deleted. This effectively resets the seriesSeqCount. A subsequent event
-        published for the same series will cause tracking data to be re-created and seriesSeqCount set to 1.
+        if the attribute *seriesId* is set. An event publisher may indicate that this is the last event in a series
+        by publishing an event with the attribute *endSeries* to true or by calling the endpoint
+        *notifications/events/endSeries*. When a series is ended, tracking data for that series is deleted.
+        This effectively resets the seriesSeqCount. A subsequent event published with the same seriesId will create a
+        new series with a seriesSeqCount starting at 1.
 
         Event attributes:
           - source: Context in which event happened: Examples: *Jobs*, *Systems*.
@@ -942,9 +943,9 @@ paths:
           - subject: Subject of event in the context of the service. Examples: job Id, system Id, file path, role name, etc.
           - timestamp: When the event happened.
           - data: Optional additional information associated with the event. Data specific to the service associated with the event.
-          - deleteSubscriptionsMatchingSubject: Boolean indicating that all subscriptions whose *subjectFilter* matches the *subject* of the event should be deleted once all notifications are delivered.
+          - deleteSubscriptionsMatchingSubject: Boolean indicating that all subscriptions whose *subjectFilter* exactly matches the *subject* of the event should be deleted once all notifications are delivered. This will also end the series if seriesId is set.
           - seriesId: Optional Id that may be used to group events from the same tenant, source and subject. In a series, event order is preserved when sending out notifications.
-          - endSeries: Boolean indicating that this is the last event in a series. Series tracking data will be deleted. *seriesSeqCount* effectively reset to 0.
+          - endSeries: Boolean indicating that this is the last event in a series. Series tracking data will be deleted.
           - *tenant*: Tapis tenant associated with the event.
           - *uuid*: Tapis generated unique identifier.
           - *user*: Tapis user associated with the event.
@@ -1109,12 +1110,12 @@ paths:
         - Events
       description: |
         End an event series. Series tracking data will be deleted. A subsequent new event published with the same
-        tenant, source, subject and seriesId will recreate the series tracking data with the initial *seriesSeqCount*
-        set to 1. Associated event source, subject and seriesId must be provided in the request body.
+        tenant, source, subject and seriesId will create a new series with the *seriesSeqCount* starting at 1.
+        Associated event source, subject and seriesId must be provided in the request body.
         
         Note that the attributes *tenant* and *seriesSeqCount* in the request body are allowed but ignored.
         These attributes are maintained by Tapis as part of the series tracking data. To specify a tenant other
-        than the oboTenant, please use the query parameter.
+        than the oboTenant, please use the query parameter *tenant*.
       operationId: endEventSeries
       parameters:
         - name: tenant
