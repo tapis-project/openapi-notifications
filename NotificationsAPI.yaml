@@ -1111,9 +1111,7 @@ paths:
         tenant, source, subject and seriesId will create a new series with the *seriesSeqCount* starting at 1.
         Associated event source, subject and seriesId must be provided in the request body.
         
-        Note that the attributes *tenant* and *seriesSeqCount* in the request body are allowed but ignored.
-        These attributes are maintained by Tapis as part of the series tracking data. To specify a tenant other
-        than the oboTenant, please use the query parameter *tenant*.
+        To specify a tenant other than the oboTenant, please use the query parameter *tenant*.
       operationId: endEventSeries
       parameters:
         - name: tenant
@@ -1471,14 +1469,13 @@ components:
       properties:
         source:
           type: string
+          minLength: 1
         subject:
           type: string
+          minLength: 1
         seriesId:
           type: string
-        tenant:
-          type: string
-        seriesSeqCount:
-          type: integer
+          minLength: 1
     # --- Notification ------------------------------------------------------------
     Notification:
       type: object
