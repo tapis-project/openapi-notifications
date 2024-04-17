@@ -21,8 +21,6 @@ servers:
   - url: 'https://dev.develop.tapis.io/'
     description: Development environment
     variables: {}
-security:
-  - TapisJWT: []
 tags:
   - name: General
     description: General service health and readiness
@@ -84,6 +82,8 @@ paths:
         Query parameter *anyOwner* may be used to retrieve all subscriptions owned by any user.
         Query parameter *anyOwner* takes precedence over parameter *ownedBy*. Only services may set *anyOwner*. 
       operationId: getSubscriptions
+      security:
+        - TapisJWT: []
       parameters:
         - name: search
           in: query
@@ -179,6 +179,8 @@ paths:
           - deliveryTargets: List of delivery targets to be used when delivering a matching event. Must have at least one. Each target includes delivery method (EMAIL or WEBHOOK) and delivery address.
           - ttlMinutes: Time to live in minutes specified when subscription is created or TTL is updated. Service will compute expiry based on TTL. Default is one week from creation. Value of 0 indicates no expiration.
       operationId: postSubscription
+      security:
+        - TapisJWT: []
       requestBody:
         required: true
         description: A JSON object specifying information for the subscription to be created.
@@ -227,6 +229,8 @@ paths:
         Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
         Only services or tenant administrators may set *ownedBy*.
       operationId: searchSubscriptionsQueryParameters
+      security:
+        - TapisJWT: []
       parameters:
         - name: freeFormParameterName
           in: query
@@ -310,6 +314,8 @@ paths:
         Query parameter *ownedBy* may be used to retrieve subscriptions owned by another user.
         Only services or tenant administrators may set *ownedBy*.
       operationId: searchSubscriptionsRequestBody
+      security:
+        - TapisJWT: []
       parameters:
         - name: limit
           in: query
@@ -404,6 +410,8 @@ paths:
           - created: When created. Maintained by the service.
           - updated: When last updated. Maintained by the service.
       operationId: getSubscriptionByName
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -471,6 +479,8 @@ paths:
 
         Note that the attributes *enabled* and *ttlMinutes* may be modified using other endpoints.
       operationId: patchSubscriptionByName
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -530,6 +540,8 @@ paths:
         Query parameter *ownedBy* may be used to delete a subscription owned by another user.
         Only services or tenant administrators may set *ownedBy*.
       operationId: deleteSubscriptionByName
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -587,6 +599,8 @@ paths:
           - created: When created. Maintained by the service.
           - updated: When last updated. Maintained by the service.
       operationId: getSubscriptionByUuid
+      security:
+        - TapisJWT: []
       parameters:
         - name: uuid
           in: path
@@ -636,6 +650,8 @@ paths:
       description: |
         Delete a subscription whose UUID matches the provided value. Only services may perform this operation.
       operationId: deleteSubscriptionByUuid
+      security:
+        - TapisJWT: []
       parameters:
         - name: uuid
           in: path
@@ -682,6 +698,8 @@ paths:
         Query parameter *anyOwner* takes precedence over parameter *ownedBy*.
         Only services may set *anyOwner*.
       operationId: deleteSubscriptionsBySubject
+      security:
+        - TapisJWT: []
       parameters:
         - name: subject
           in: path
@@ -727,6 +745,8 @@ paths:
         Query parameter *ownedBy* may be used to check a subscription owned by another user.
         Only services or tenant administrators may set *ownedBy*.
       operationId: isEnabled
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -774,6 +794,8 @@ paths:
         Query parameter *ownedBy* may be used to enable a subscription owned by another user.
         Only services or tenant administrators may set *ownedBy*.
       operationId: enableSubscription
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -821,6 +843,8 @@ paths:
         Query parameter *ownedBy* may be used to disable a subscription owned by another user.
         Only services or tenant administrators may set *ownedBy*.
       operationId: disableSubscription
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -868,6 +892,8 @@ paths:
         Query parameter *ownedBy* may be used to update a subscription owned by another user.
         Only services or tenant administrators may set *ownedBy*.
       operationId: updateTTL
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -977,6 +1003,8 @@ paths:
           - received
           - seriesSeqCount
       operationId: publishEvent
+      security:
+        - TapisJWT: []
       parameters:
         - name: tenant
           in: query
@@ -1063,6 +1091,8 @@ paths:
           - uuid
           - user
       operationId: postEvent
+      security:
+        - TapisJWT: []
       deprecated: true
       parameters:
         - name: tenant
@@ -1113,6 +1143,8 @@ paths:
         
         To specify a tenant other than the oboTenant, please use the query parameter *tenant*.
       operationId: endEventSeries
+      security:
+        - TapisJWT: []
       parameters:
         - name: tenant
           in: query
@@ -1187,6 +1219,8 @@ paths:
         If query parameter *endSeries* is set to true (the default), when the final event of the test sequence is
         sent it will have the event attribute *endSeries* set to true. This will result in removal of series tracking data.
       operationId: beginTestSequence
+      security:
+        - TapisJWT: []
       parameters:
         - name: subscriptionTTL
           in: query
@@ -1233,6 +1267,8 @@ paths:
       description: |
         Retrieve status and result history for a test sequence created using the endpoint *test/begin*.
       operationId: getTestSequence
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
@@ -1277,6 +1313,8 @@ paths:
         Delete all test sequence artifacts including the subscription, results and event series tracking data.
         Only services may perform this operation.
       operationId: deleteTestSequence
+      security:
+        - TapisJWT: []
       parameters:
         - name: name
           in: path
